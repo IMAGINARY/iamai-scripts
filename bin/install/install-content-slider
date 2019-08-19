@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+if [ "$UID" -ne 0 ]
+then
+    >&2 echo "This script requires superuser priviledges."
+    exit 1
+fi
+
+# Target version
+COMMITISH_SLIDER="04d8f8f037950b2f39b71a0b76530b2727c9b81d"
+COMMITISH_APPS="b7079f825823af0ec64cc2bb6fa6fbfe8d86dd42"
+
+INSTALL_DIR_BASE="/opt/content-slider"
+
+# Install the slider
+INSTALL_DIR_SLIDER="$INSTALL_DIR_BASE/content-slider"
+mkdir -p "$INSTALL_DIR_SLIDER"
+cd "$INSTALL_DIR_SLIDER"
+git init
+git remote remove origin &> /dev/null || true
+git remote add origin https://github.com/IMAGINARY/content-slider.git
+git fetch --tags origin
+
+# Clean up local repo modifications
+git reset --hard
+rm -rf fonts/*
+git submodule foreach --recursive 'git checkout -- . || :'
+git submodule update --init --recursive
+git clean -d -f -f -x
+git submodule foreach --recursive git clean -d -f -f -x
+
+# Get the new stuff
+git checkout -f "$COMMITISH_SLIDER"
+# Pull in the font files via a submodule
+git submodule update --force --init --recursive
+
+# Copy initial configuration (but don't overwrite existing)
+rm -rf "$INSTALL_DIR_BASE/external-config"
+ln -sF /cfg "$INSTALL_DIR_BASE/external-config"
+cp -n cfg/mathematikon/*.yaml "$INSTALL_DIR_BASE/external-config/"
+
+# Install the apps
+INSTALL_DIR_APPS="$INSTALL_DIR_BASE/content-slider-apps"
+mkdir -p "$INSTALL_DIR_APPS"
+cd "$INSTALL_DIR_APPS"
+git init
+git remote remove origin &> /dev/null || true
+git remote add origin https://github.com/IMAGINARY/content-slider-apps.git
+git fetch --tags origin
+git checkout -f "$COMMITISH_APPS"
