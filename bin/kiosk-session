@@ -26,7 +26,7 @@ PIDS="$PIDS $!"
 
 # Set wallpaper
 # Should be done after screen setup (e.g. in init-* scripts)
-feh --bg-fill /opt/kiosk-scripts/assets/wallpaper.png &
+feh --bg-max /opt/kiosk-scripts/assets/wallpaper.png --image-bg "$(< /opt/kiosk-scripts/assets/wallpaper-bg-color.txt)" &
 PIDS="$PIDS $!"
 
 while true; do
