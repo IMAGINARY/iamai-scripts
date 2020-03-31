@@ -12,7 +12,7 @@ mkdir -p "$DIR"
 cd "$DIR"
 git init
 git remote remove origin &> /dev/null || true
-git remote add origin https://github.com/IMAGINARY/mathematikon-scripts.git
+git remote add origin https://github.com/IMAGINARY/iamai-scripts.git
 git fetch --tags origin
 git reset --hard origin/master
 git checkout master
@@ -21,26 +21,15 @@ git checkout master
 rsync -va --info=ALL --exclude ".gitkeep" "$DIR/rootfs/" /
 
 # disable the network time synchronization (time should be set via BIOS)
-systemctl disable systemd-timesyncd.service
+# systemctl disable systemd-timesyncd.service
 
 # enable timer to automatically power-off the station
-systemctl daemon-reload
-systemctl reenable --now systemd-poweroff.timer
-systemctl start systemd-poweroff.timer
-
-# enable a service to automatically set the hostname during boot
-systemctl daemon-reload
-systemctl enable assign-hostname.service
-systemctl start assign-hostname.service
+# systemctl daemon-reload
+# systemctl reenable --now systemd-poweroff.timer
+# systemctl start systemd-poweroff.timer
 
 # modify configuration files on the host
 ./bin/internal/modify-os-cfg
-
-# enable auto-mounting of partitions labeld MATHSTATION to /opt/content-slider/USB
-./bin/internal/automount-math-station
-systemctl daemon-reload                               # autogenerate the systemd unit files
-systemctl enable copy-configuration-from-usb.service  # the unit for config copying
-systemctl restart local-fs.target                     # needed to start automounting immediately, not just after reboot
 
 # disable checking for updates, auto updates, upgrades and notifications
 ./bin/internal/disable-auto-updates
