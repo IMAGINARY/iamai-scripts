@@ -12,7 +12,10 @@ set -e
 export DEBIAN_FRONTEND=noninteractive
 
 # Add PPA for software not in the default Ubuntu repositories
-add-apt-repository -y ppa:jonathonf/barrier
+#add-apt-repository -y ppa:jonathonf/barrier
+# FIXME: Use Bionic packages untul Focal packages are released
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 8CF63AD3F06FC659
+add-apt-repository "deb http://ppa.launchpad.net/jonathonf/barrier/ubuntu bionic main"
 
 # Update the list of available packages
 apt update
@@ -34,7 +37,6 @@ apt install -yq --no-install-recommends \
     git \
     htop \
     jackd2 \
-    kmidimon \
     mesa-utils \
     net-tools \
     nginx \
@@ -47,6 +49,9 @@ apt install -yq --no-install-recommends \
     ranger \
     vmpk \
     '' # dummy entry to terminate the list
+
+# FIXME:    kmidimon \
+
 
 # Add the kiosk user to the audio group for accessing the realtime permissions
 # as set up by jackd above
