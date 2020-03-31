@@ -6,16 +6,43 @@ then
     exit 1
 fi
 
+# cd into script directory
+cd "$(dirname -- "$0")"
+
 # retrieve files via git
 DIR="/opt/kiosk-scripts"
+BRANCH="wip"
 mkdir -p "$DIR"
-cd "$DIR"
+pushd "$DIR"
 git init
-git remote remove origin &> /dev/null || true
-git remote add origin https://github.com/IMAGINARY/iamai-scripts.git
-git fetch --tags origin
-git reset --hard origin/master
-git checkout master
+git checkout "$BRANCH" || git checkout -b "$BRANCH"
+
+if [[ `git status --porcelain` ]]; then
+    git reset --hard
+    echo "There were local changes. Re-running ..."
+    popd
+    exec "$0" "$@"
+else
+    # no local changes, check remote changes
+    git remote remove origin &> /dev/null || true
+    git remote add origin https://github.com/IMAGINARY/iamai-scripts.git
+    git fetch --tags origin
+
+    LOCAL_SHA=$(git rev-parse "$BRANCH")
+    REMOTE_SHA=$(git rev-parse "origin/$BRANCH")
+
+    if [ ! "$LOCAL_SHA" = "$REMOTE_SHA" ]; then
+        git reset --hard "origin/$BRANCH"
+        git checkout "origin/$BRANCH"
+        echo "There were remote changes. Re-running ..."
+        popd
+        exec "$0" "$@"
+    fi
+fi
+
+echo "kiosk-scripts files up to date. Running scripts ..."
+
+popd
 
 # sync the rootfs
 rsync -va --info=ALL --exclude ".gitkeep" "$DIR/rootfs/" /
