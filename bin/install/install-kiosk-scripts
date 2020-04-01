@@ -23,7 +23,7 @@ if [[ `git status --porcelain` ]]; then
     git reset --hard
     echo "There were local changes. Re-running ..."
     popd
-    exec "$0" "$@"
+    exec "$(basename $0)" "$@"
 else
     # no local changes, check remote changes
     git remote remove origin &> /dev/null || true
@@ -38,7 +38,7 @@ else
         git checkout "origin/$BRANCH"
         echo "There were remote changes. Re-running ..."
         popd
-        exec "$0" "$@"
+        exec "$(basename $0)" "$@"
     fi
 fi
 
