@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+if [ "$UID" -ne 0 ]
+then
+    >&2 echo "This script requires superuser priviledges."
+    exit 1
+fi
+
+# cd into script directory
+cd "$(dirname -- "$0")"
+
+# sync the rootfs
+rsync -va --info=ALL --exclude ".gitkeep" "../../rootfs/" /
+
+# disable the network time synchronization (time should be set via BIOS)
+# systemctl disable systemd-timesyncd.service
+
+# enable timer to automatically power-off the station
+# systemctl daemon-reload
+# systemctl reenable --now systemd-poweroff.timer
+# systemctl start systemd-poweroff.timer
+
+# modify configuration files on the host
+./modify-os-cfg
+
+# disable checking for updates, auto updates, upgrades and notifications
+./disable-auto-updates
+systemctl disable apt-daily.service apt-daily-upgrade.service
+systemctl disable apt-daily.timer apt-daily-upgrade.timer
+
+# update dconf setting based on rsynced config files
+dconf update
+
+# update grub menu
+update-grub
