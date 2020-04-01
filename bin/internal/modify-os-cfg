@@ -1,4 +1,4 @@
-#!/usr/bin/augtool -sf
+#!/usr/bin/augtool -sLf
 
 ################################################################################
 # preparations
@@ -14,9 +14,13 @@ set /augeas/load/Xorg/incl[. = "/etc/X11/xorg.conf"] "/usr/share/X11/xorg.conf"
 # hijack Puppet lens for processing some generic INI files
 set /augeas/load/Puppet/incl[last()+1] "/var/lib/AccountsService/users/*"
 
+# Use Shellvars_list lens instead of Shellvars for /etc/default/* files (e.g. /etc/default/grub),
+# because some shell variables contain lists
+rm /augeas/load/Shellvars/incl[. = "/etc/default/*"]
+set /augeas/load/Shellvars_list/incl[last()+1] "/etc/default/*"
+
 # load the modified augtool configuration
 load
-
 
 ################################################################################
 # configuration changes
@@ -30,7 +34,11 @@ set /files/var/lib/AccountsService/users/kiosk/User/XSession "kiosk"
 # For some reason, GRUB recordfail is triggered after almost every reboot.
 # I don't know how to fix it, so I reduce the boot delay introduced by
 # recordfail to just a couple of seconds.
-set /files/etc/default/grub/GRUB_RECORDFAIL_TIMEOUT "3"
+set /files/etc/default/grub/GRUB_RECORDFAIL_TIMEOUT/value "3"
+
+# FIXME: Logging out of a session in gdm3 seems to be broken in Ubuntu 20.04
+# See https://bugs.launchpad.net/ubuntu/+source/gdm3/+bug/1845801
+rm /files/etc/default/grub/GRUB_CMDLINE_LINUX_DEFAULT/value[. = "splash"]
 
 ################################################################################
 # the following changes caused more harm than good and are therefore disabled
