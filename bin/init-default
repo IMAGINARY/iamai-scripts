@@ -6,12 +6,12 @@ function finish {
 }
 trap finish SIGINT SIGTERM EXIT
 
-# Either use the user-defined init script or the default init script for this host (if any)
+# Either use the user-defined init script or nothing
 USER_DEFINED_INIT="$HOME/.exhibition/init-default"
 if command -v "$USER_DEFINED_INIT"; then
     INIT="$USER_DEFINED_INIT"
 else
-    INIT="init-$(get-default-exhibit-by-hostname)"
+    INIT=""
 fi
 
 if command -v "$INIT"; then

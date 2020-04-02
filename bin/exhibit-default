@@ -6,12 +6,12 @@ function finish {
 }
 trap finish SIGINT SIGTERM EXIT
 
-# Either use the user-defined exhibit or the default exhibit for this host (if any)
+# Either use the user-defined exhibit or nothing
 USER_DEFINED_EXHIBIT="$HOME/.exhibition/exhibit-default"
 if command -v "$USER_DEFINED_EXHIBIT"; then
     EXHIBIT="$USER_DEFINED_EXHIBIT"
 else
-    EXHIBIT="exhibit-$(get-default-exhibit-by-hostname)"
+    EXHIBIT=""
 fi
 
 if command -v "$EXHIBIT"; then

@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-
-case $(hostname) in
-    mathematikon) echo "content-slider" ;;
-    *)            echo "none" ;;
-esac

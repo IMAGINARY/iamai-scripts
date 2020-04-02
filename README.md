@@ -78,8 +78,7 @@ By default, a plain X11 session is started that first runs an init script for th
 
 The init script is supposed to run only once and it needs to exit once the init tasks are performed. Otherwise, script execution will block and no exhibit will be started.
 
-By default, init scripts and exhibits are selected via the host name of the system (see `bin/get-default-exhibit-by-hostname`).
-It is possible to override this behavior to allow for user-defined exhibits. If the following executables are present, they will be run instead of the system-wide default:
+By default, the following scripts are used to init and launch an exhibit:
 ```
 ~/.exhibition/default-init
 ~/.exhibition/default-exhibit
