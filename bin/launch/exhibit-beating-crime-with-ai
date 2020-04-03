@@ -13,6 +13,8 @@ kiosk-browser $KIOSK_OPTS \
     --kiosk \
     --fullscreen \
     --hide-scrollbars \
+    --reload-idle "$(( 3 * 60 ))" \
+    --reload-unresponsive 60 \
     --serve /opt/beating-crime-with-ai \
     index.html &
 PID_UI=$!
