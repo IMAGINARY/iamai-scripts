@@ -13,20 +13,9 @@ if [ "$KIOSK_BROWSER_VERSION" = "$KIOSK_BROWSER_VERSION_INSTALLED" ]
 then
     echo "kiosk-browser v$KIOSK_BROWSER_VERSION already installed"
 else
-    # First install dependencies
-    apt install -y --no-install-recommends \
-        gconf-service \
-        gconf-service-backend \
-        gconf2 \
-        gconf2-common \
-        libappindicator1 \
-        libgconf-2-4 \
-        libindicator7 \
-        '' # dummy entry to terminate the list
-    
     # Now install the kiosk-browser package
-    TEMP_DEB="$(mktemp)"
+    TEMP_DEB="$(mktemp --suffix .deb)"
     wget -O "$TEMP_DEB" "https://github.com/IMAGINARY/kiosk-browser/releases/download/v"$KIOSK_BROWSER_VERSION"/kiosk-browser_"$KIOSK_BROWSER_VERSION"_amd64.deb"
-    dpkg -i "$TEMP_DEB"
+    apt install "$TEMP_DEB"
     rm -f "$TEMP_DEB"
 fi
