@@ -1,7 +1,5 @@
 #!/bin/bash
-# This script is supposed to run any exhibit. In this example, it is the kiosk browser,
-# but it can be anything.
-# The wrapper script is supposed to be visible in ps -a resp. ps -u `id -u` to make
+# This wrapper script is supposed to be visible in ps -a resp. ps -u `id -u` to make
 # it easy to kill it (by a script or manually)
 
 # Launch the exhibit in the background
