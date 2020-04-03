@@ -1,23 +1,8 @@
 #!/usr/bin/env bash
 
-if [ "$UID" -ne 0 ]
-then
-    >&2 echo "This script requires superuser priviledges."
-    exit 1
-fi
-
-set -e
-
-# Target version
 COMMITISH="8769427780086eda2f0a5f0d56b1e6981cf02f57"
-
-# Make sure the folder exists
+REPO_URL="https://github.com/IMAGINARY/beating-crime-with-ai.git"
 INSTALL_DIR="/opt/beating-crime-with-ai"
-mkdir -p "$INSTALL_DIR"
 
-cd "$INSTALL_DIR"
-git init
-git remote remove origin &> /dev/null || true
-git remote add origin https://github.com/IMAGINARY/beating-crime-with-ai.git
-git fetch --tags origin
-git checkout "$COMMITISH"
+"${BASH_SOURCE%/*}/../internal/install-source-from-git" "$COMMITISH" "$REPO_URL" "$INSTALL_DIR"
+exit $?
