@@ -34,6 +34,8 @@ set /files/var/lib/AccountsService/users/kiosk/User/XSession "kiosk"
 # For some reason, GRUB recordfail is triggered after almost every reboot.
 # I don't know how to fix it, so I reduce the boot delay introduced by
 # recordfail to just a couple of seconds.
+rm /files/etc/default/grub/GRUB_RECORDFAIL_TIMEOUT/value[.]
+set /files/etc/default/grub/GRUB_RECORDFAIL_TIMEOUT/quote ""
 set /files/etc/default/grub/GRUB_RECORDFAIL_TIMEOUT/value "3"
 
 # FIXME: Logging out of a session in gdm3 seems to be broken in Ubuntu 20.04
