@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+if [ "$UID" -ne 0 ]
+then
+    >&2 echo "This script requires superuser privileges."
+    exit 1
+fi
+
+set -e
+
+# Install dependencies for certain python packages
+apt install -yq \
+    alsa-utils \
+    build-essential \
+    libasound2-dev \
+    libasound2-dev \
+    libjack-jackd2-0 \
+    libjack-jackd2-dev \
+    pkg-config \
+    python2-dev \
+    virtualenv \
+    '' # dummy entry to terminate the list
+
+# Install AI Jam sources
+COMMITISH="v1.1.1"
+REPO_URL="https://github.com/IMAGINARY/ai-jam.git"
+INSTALL_DIR="/opt/ai-jam"
+
+"${BASH_SOURCE%/*}/../internal/install-source-from-git" "$COMMITISH" "$REPO_URL" "$INSTALL_DIR"
+
+# Setup a virtual environment inside $INSTALL_DIR
+# FIXME: On Ubuntu 20.04, the ipaddress package is missing and needs to be installed manually :-(
+cd "$INSTALL_DIR"
+IPADDRESS_WHEEL_URL="https://files.pythonhosted.org/packages/c2/f8/49697181b1651d8347d24c095ce46c7346c37335ddc7d255833e7cde674d/ipaddress-1.0.23-py2.py3-none-any.whl"
+WHEEL_DIR="/usr/share/python-wheels"
+( cd "$WHEEL_DIR" && curl -O "$IPADDRESS_WHEEL_URL" )
+virtualenv --python=$(which python2.7) --no-setuptools env
+
+# Install python packages in virtual environment
+. ./env/bin/activate
+./env/bin/pip install setuptools==44
+./env/bin/pip install tensorflow==1.12.0 magenta==0.1.15
+
+# Download the magenta models if necessary
+./INSTALL.sh
+
+# Modify the default config
+sed "s/\(^[[:space:]]*skipStartScreen:[[:space:]]*\)false/\1true/" \
+    ./public/cfg/sample.config.yml \
+    > ./public/cfg/config.yml
