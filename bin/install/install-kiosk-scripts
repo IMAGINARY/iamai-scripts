@@ -8,41 +8,41 @@ fi
 
 set -e
 
-# cd into script directory
-cd "$(dirname -- "$0")"
-
 # retrieve files via git
-DIR="/opt/kiosk-scripts"
+INSTALL_DIR="/opt/kiosk-scripts"
 BRANCH="wip"
-mkdir -p "$DIR"
-pushd "$DIR"
+mkdir -p "$INSTALL_DIR"
+cd "$INSTALL_DIR"
 git init
-git checkout "$BRANCH" || git checkout -b "$BRANCH"
+
+# Checkout the requested branch
+git checkout "$BRANCH" 2> /dev/null || git checkout -b "$BRANCH"
 
 if [[ `git status --porcelain` ]]; then
     git reset --hard
     echo "There were local changes. Re-running ..."
-    popd
-    exec "$(basename $0)" "$@"
+    exec "./bin/install/$(basename $0)" "$@"
 else
-    # no local changes, check remote changes
+    # no local changes, check for remote changes
     git remote remove origin &> /dev/null || true
     git remote add origin https://github.com/IMAGINARY/iamai-scripts.git
     git fetch --tags origin
 
-    LOCAL_SHA=$(git rev-parse "$BRANCH")
+    EMPTY_TREE_SHA=$(git hash-object -t tree --stdin < /dev/null)
+
+    # When the local repo is empty, use the SHA of the empty repo, because
+    # git rev-parse doesn't work in this situation
+    LOCAL_SHA=$( ( git rev-parse wip &> /dev/null && git rev-parse wip ) || echo "$EMPTY_TREE_SHA" )
     REMOTE_SHA=$(git rev-parse "origin/$BRANCH")
 
     if [ ! "$LOCAL_SHA" = "$REMOTE_SHA" ]; then
         git reset --hard "origin/$BRANCH"
         git checkout "origin/$BRANCH"
         echo "There were remote changes. Re-running ..."
-        popd
-        exec "$(basename $0)" "$@"
+        exec "./bin/install/$(basename $0)" "$@"
     fi
 fi
 
 echo "kiosk-scripts files up to date. Running scripts ..."
 
-popd
-../internal/install-kiosk-scripts-local
+./bin/internal/install-kiosk-scripts-local
