@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 COMMITISH="v0.2.0"
 REPO_URL="https://github.com/IMAGINARY/neural-numbers.git"

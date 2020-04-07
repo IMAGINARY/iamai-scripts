@@ -1,2 +1,2 @@
-#!/usr/bin/env bash
+#!/bin/bash
 . "${BASH_SOURCE%/*}/internal/action-default"

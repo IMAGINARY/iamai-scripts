@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 COMMITISH="master"
 REPO_URL="https://github.com/IMAGINARY/ethics-vehicles"

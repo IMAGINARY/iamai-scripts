@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 PACKAGE_NAME="kiosk-browser"
 PACKAGE_VERSION="0.13.0-beta.0"

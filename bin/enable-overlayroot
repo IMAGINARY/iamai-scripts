@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 CMD='echo "overlayroot_cfgdisk=\"disabled\"
 overlayroot=\"tmpfs:resurse=0\"" > /etc/overlayroot.local.conf'
 

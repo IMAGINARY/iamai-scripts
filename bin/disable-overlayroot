@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 CMD='echo "overlayroot_cfgdisk=\"disabled\"
 overlayroot=\"\"" > /etc/overlayroot.local.conf'
 

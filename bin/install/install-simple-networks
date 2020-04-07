@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 COMMITISH="v0.1.0"
 REPO_URL="https://github.com/IMAGINARY/simple-networks.git"
