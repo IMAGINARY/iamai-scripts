@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+
+PIDS=""
+function finish {
+    EXIT_CODE=$?
+    kill $PIDS >/dev/null 2>&1
+    exit $EXIT_CODE
+}
+trap finish SIGINT SIGTERM EXIT
+
+USAGE_STRING="Usage: $0 [--help|--test]"
+
+if [[ "$*" == *--help* ]]; then
+    echo "$USAGE_STRING"
+    exit
+fi
+
+if [ "$#" -gt 1 ]; then
+    echo "Illegal number of parameters"
+    exit 2
+fi
+
+# Source system wide default values
+DEFAULTS_FILE="/etc/default/kiosk"
+[ -r "$DEFAULTS_FILE" ] && . "$DEFAULTS_FILE" 
+
+CONFIG_DIR="${XDG_CONFIG_HOME:-"$HOME/.config"}/kiosk"
+
+case $( basename "$0" ) in
+    init-default)
+        USER_CMD="$CONFIG_DIR/init-default"
+        SYSTEM_CMD="$INIT_EXHIBIT"
+        MODE="init"
+        ;;
+    exhibit-default)
+        USER_CMD="$CONFIG_DIR/exhibit-default"
+        SYSTEM_CMD="$LAUNCH_EXHIBIT"
+        MODE="exhibit"
+        ;;
+    *)
+        >&2 echo "Invalid script name. Must be either 'init-default' or 'exhibit-default'."
+        exit 1
+        ;;
+esac
+
+if command -v "$USER_CMD"; then
+    # Use user-defined command
+    CMD="$USER_CMD"
+elif [ -n "$SYSTEM_CMD" ]; then
+    # Use system wide default
+    CMD="$SYSTEM_CMD"
+fi
+
+if [[ "$*" == *--test* ]]; then
+    # Check if default command has been set and exit
+    [ -n "$CMD" ]
+    exit $?
+fi
+
+# Launch command if defined
+if [ -n "$CMD" ]; then
+    echo "Running default $MODE script: $CMD"
+    ( bash -c "exec $CMD" ) &
+    PID_CMD=$!
+    PIDS="$PIDS $PID_CMD"
+    wait $PID_CMD
+else
+    >&2 echo "Default $MODE script not found"
+    exit 1
+fi

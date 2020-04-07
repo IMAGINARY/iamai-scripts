@@ -78,11 +78,13 @@ By default, a plain X11 session is started that first runs an init script for th
 
 The init script is supposed to run only once and it needs to exit once the init tasks are performed. Otherwise, script execution will block and no exhibit will be started.
 
-By default, the following scripts are used to init and launch an exhibit:
+The system wide default for init and exhibit scripts are defined in `/etc/default/kiosk`.
+If the following user-provided scripts are present, they override the system-wide defaults:
 ```
-~/.exhibition/default-init
-~/.exhibition/default-exhibit
+$XDG_CONFIG_HOME/kiosk/init-default
+$XDG_CONFIG_HOME/kiosk/exhibit-default
 ```
+If `$XDG_CONFIG_HOME` is not set, it's default value `~/.config` will be assumed.
 Note that these executables can be scripts themselves or just symlinks to one of the `init-*` respectively `exhibit-*` scripts. If no special initialization is needed, you can just create a symlink to `true`:
 ```
 ln -s `which true` ~/.exhibition/init-default
