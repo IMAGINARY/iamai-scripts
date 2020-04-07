@@ -30,9 +30,5 @@ PIDS="$PIDS $!"
 feh --bg-max /opt/kiosk-scripts/assets/wallpaper.png --image-bg "$(< /opt/kiosk-scripts/assets/wallpaper-bg-color.txt)" &
 PIDS="$PIDS $!"
 
-while true; do
-  env sleep 365d &
-  PID_SLEEP=$!
-  PIDS="$PIDS $PID_SLEEP"
-  wait $PID_SLEEP
-done
+# Keep the session alive until its explicitly killed from outside
+env sleep infinity
