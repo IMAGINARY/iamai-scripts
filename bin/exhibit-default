@@ -2,7 +2,9 @@
 
 PIDS=""
 function finish {
+    EXIT_CODE=$?
     kill $PIDS >/dev/null 2>&1
+    exit $EXIT_CODE
 }
 trap finish SIGINT SIGTERM EXIT
 
