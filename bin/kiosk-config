@@ -1,0 +1,85 @@
+#!/bin/bash
+
+# Script partially based on https://github.com/RPi-Distro/raspi-config
+
+DIALOG=whiptail
+ASK_TO_REBOOT=0
+
+calc_wt_size() {
+  # NOTE: it's tempting to redirect stderr to /dev/null, so supress error 
+  # output from tput. However in this case, tput detects neither stdout or 
+  # stderr is a tty and so only gives default 80, 24 values
+  WT_HEIGHT=18
+  WT_WIDTH=$(tput cols)
+
+  if [ -z "$WT_WIDTH" ] || [ "$WT_WIDTH" -lt 60 ]; then
+    WT_WIDTH=80
+  fi
+  if [ "$WT_WIDTH" -gt 178 ]; then
+    WT_WIDTH=120
+  fi
+  WT_MENU_HEIGHT=$(($WT_HEIGHT-7))
+}
+
+do_finish() {
+  if [ $ASK_TO_REBOOT -eq 1 ]; then
+    "$DIALOG" --yesno "Would you like to reboot now?" 20 60 2
+    if [ $? -eq 0 ]; then # yes
+      sync
+      reboot
+    fi
+  fi
+  exit 0
+}
+
+do_unimplemented() {
+    "$DIALOG" --msgbox "Not implemented yet"  0 0 1
+}
+
+do_exhibit_menu() {
+    do_unimplemented
+}
+
+do_hardening_menu() {
+    do_unimplemented
+}
+
+do_graphics_and_input_menu() {
+    do_unimplemented
+}
+
+do_localization_menu() {
+    do_unimplemented
+}
+
+do_system_information_menu() {
+    do_unimplemented
+}
+
+do_main_menu() {
+    FUN=$("$DIALOG" --title "Kiosk Configuration Tool (kiosk-config)" --menu "Setup Options" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Finish --ok-button Select \
+    "1 Exhibit" "Configure which exhibit to start automatically" \
+    "2 Hardening" "Harden the station" \
+    "3 Graphics & Input" "Configure graphics and input devices" \
+    "4 Localization Options" "Set up language and regional settings to match your location" \
+    "5 System information" "Display operating system and hardware information" \
+    3>&1 1>&2 2>&3)
+    RET=$?
+    if [ $RET -eq 1 ]; then
+        do_finish
+    elif [ $RET -eq 0 ]; then
+        case "$FUN" in
+            1\ *) do_exhibit_menu ;;
+            2\ *) do_hardening_menu ;;
+            3\ *) do_graphics_and_input_menu ;;
+            4\ *) do_localization_menu ;;
+            5\ *) do_system_information_menu ;;
+            *) "$DIALOG" --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
+        esac || "$DIALOG" --msgbox "There was an error running option $FUN" 20 60 1
+    fi
+}
+
+calc_wt_size
+while true; do
+    do_main_menu
+done
