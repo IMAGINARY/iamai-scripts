@@ -12,6 +12,7 @@ set -e
 apt install \
     augeas-tools \
     git \
+    inxi \
     '' # dummy entry to terminate the list
 
 # retrieve files via git

@@ -53,7 +53,24 @@ do_localization_menu() {
 }
 
 do_system_information_menu() {
-    do_unimplemented
+    FUN=$("$DIALOG" --title "Kiosk Configuration Tool (kiosk-config)" --menu "Setup Options" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
+    "1 Brief" "Show a brief summary" \
+    "2 Detailed" "Show detailed system and hardware information" \
+    3>&1 1>&2 2>&3)
+    RET=$?
+    if [ $RET -eq 1 ]; then
+        return 0
+    elif [ $RET -eq 0 ]; then
+        case "$FUN" in
+            1\ *)
+                "$DIALOG" --textbox /dev/stdin --scrolltext 0 $WT_WIDTH <<<"$(inxi -F -w)"
+                ;;
+            2\ *)
+                "$DIALOG" --textbox /dev/stdin --scrolltext 0 $WT_WIDTH <<<"$(inxi -F -d -f -i -l -m -o -p -r -t -u -x -w)"
+                ;;
+            *) "$DIALOG" --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
+        esac || "$DIALOG" --msgbox "There was an error running option $FUN" 20 60 1
+    fi
 }
 
 do_main_menu() {
