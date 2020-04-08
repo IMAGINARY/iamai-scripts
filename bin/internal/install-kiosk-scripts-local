@@ -8,7 +8,7 @@ fi
 
 set -e
 
-USAGE_STRING="Usage: $0 [--help|--confirm-rsync-overwrite]"
+USAGE_STRING="Usage: $0 [--help|--confirm-rsync-overwrite|--no-update-grub]"
 
 if [[ "$*" == *--help* ]]; then
     echo "$USAGE_STRING"
@@ -62,4 +62,8 @@ systemctl disable apt-daily.timer apt-daily-upgrade.timer
 dconf update
 
 # update grub menu
-update-grub
+if [[ "$*" == *--no-update-grub* ]]; then
+    echo "Skipping update-grub due to --no-update-grub."
+else
+    update-grub
+fi
