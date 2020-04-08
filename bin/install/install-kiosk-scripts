@@ -45,4 +45,4 @@ fi
 
 echo "kiosk-scripts files up to date. Running scripts ..."
 
-./bin/internal/install-kiosk-scripts-local
+./bin/internal/install-kiosk-scripts-local "$@"
