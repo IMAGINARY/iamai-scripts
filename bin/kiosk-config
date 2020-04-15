@@ -21,6 +21,16 @@ calc_wt_size() {
   D_MENU_HEIGHT=$(($D_HEIGHT-7))
 }
 
+error_unrecognized_option() {
+    "$DIALOG" --msgbox "Programmer error: unrecognized option $1" 0 0
+    exit 1
+}
+
+error_processing_option() {
+    "$DIALOG" --msgbox "There was an error running option $1" 0 0
+    exit 1
+}
+
 do_finish() {
   if [ $ASK_TO_REBOOT -eq 1 ]; then
     "$DIALOG" --yesno "Would you like to reboot now?" 20 60 2
@@ -72,8 +82,8 @@ do_system_information_menu() {
             2\ *)
                 "$DIALOG" --textbox /dev/stdin --scrolltext 0 $D_WIDTH <<<"$(inxi -F -d -f -i -l -m -o -p -r -t -u -x -w)"
                 ;;
-            *) "$DIALOG" --msgbox "Programmer error: unrecognized option $FUN" 20 60 1 ;;
-        esac || "$DIALOG" --msgbox "There was an error running option $FUN" 20 60 1
+            *) error_unrecognized_option "$FUN" ;;
+        esac || error_processing_option "$FUN"
     fi
 }
 
@@ -99,8 +109,8 @@ do_main_menu() {
             3\ *) do_graphics_and_input_menu ;;
             4\ *) do_localization_menu ;;
             5\ *) do_system_information_menu ;;
-            *) "$DIALOG" --msgbox "Programmer error: unrecognized option $FUN" 20 60 1 ;;
-        esac || "$DIALOG" --msgbox "There was an error running option $FUN" 20 60 1
+            *) error_unrecognized_option "$FUN" ;;
+        esac || error_processing_option "$FUN"
     fi
 }
 
