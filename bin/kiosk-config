@@ -9,16 +9,16 @@ calc_wt_size() {
   # NOTE: it's tempting to redirect stderr to /dev/null, so supress error 
   # output from tput. However in this case, tput detects neither stdout or 
   # stderr is a tty and so only gives default 80, 24 values
-  WT_HEIGHT=18
-  WT_WIDTH=$(tput cols)
+  D_HEIGHT=18
+  D_WIDTH=$(tput cols)
 
-  if [ -z "$WT_WIDTH" ] || [ "$WT_WIDTH" -lt 60 ]; then
-    WT_WIDTH=80
+  if [ -z "$D_WIDTH" ] || [ "$D_WIDTH" -lt 60 ]; then
+    D_WIDTH=80
   fi
-  if [ "$WT_WIDTH" -gt 178 ]; then
-    WT_WIDTH=120
+  if [ "$D_WIDTH" -gt 178 ]; then
+    D_WIDTH=120
   fi
-  WT_MENU_HEIGHT=$(($WT_HEIGHT-7))
+  D_MENU_HEIGHT=$(($D_HEIGHT-7))
 }
 
 do_finish() {
@@ -53,34 +53,42 @@ do_localization_menu() {
 }
 
 do_system_information_menu() {
-    FUN=$("$DIALOG" --title "Kiosk Configuration Tool (kiosk-config)" --menu "Setup Options" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
-    "1 Brief" "Show a brief summary" \
-    "2 Detailed" "Show detailed system and hardware information" \
-    3>&1 1>&2 2>&3)
+    local FUN RET
+    FUN=$("$DIALOG" --title "System Information" \
+        --menu "" 0 $D_WIDTH 0 \
+        --cancel-button Back \
+        --ok-button Select \
+        "1 Brief" "Show a brief summary" \
+        "2 Detailed" "Show detailed system and hardware information" \
+        3>&1 1>&2 2>&3)
     RET=$?
     if [ $RET -eq 1 ]; then
         return 0
     elif [ $RET -eq 0 ]; then
         case "$FUN" in
             1\ *)
-                "$DIALOG" --textbox /dev/stdin --scrolltext 0 $WT_WIDTH <<<"$(inxi -F -w)"
+                "$DIALOG" --textbox /dev/stdin --scrolltext 0 $D_WIDTH <<<"$(inxi -F -w)"
                 ;;
             2\ *)
-                "$DIALOG" --textbox /dev/stdin --scrolltext 0 $WT_WIDTH <<<"$(inxi -F -d -f -i -l -m -o -p -r -t -u -x -w)"
+                "$DIALOG" --textbox /dev/stdin --scrolltext 0 $D_WIDTH <<<"$(inxi -F -d -f -i -l -m -o -p -r -t -u -x -w)"
                 ;;
-            *) "$DIALOG" --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
+            *) "$DIALOG" --msgbox "Programmer error: unrecognized option $FUN" 20 60 1 ;;
         esac || "$DIALOG" --msgbox "There was an error running option $FUN" 20 60 1
     fi
 }
 
 do_main_menu() {
-    FUN=$("$DIALOG" --title "Kiosk Configuration Tool (kiosk-config)" --menu "Setup Options" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Finish --ok-button Select \
-    "1 Exhibit" "Configure which exhibit to start automatically" \
-    "2 Hardening" "Harden the station" \
-    "3 Graphics & Input" "Configure graphics and input devices" \
-    "4 Localization Options" "Set up language and regional settings to match your location" \
-    "5 System information" "Display operating system and hardware information" \
-    3>&1 1>&2 2>&3)
+    local FUN RET
+    FUN=$("$DIALOG" --title "Kiosk Configuration Tool (kiosk-config)" \
+        --menu "Configure various settings of this kiosk station." 0 0 0 \
+        --cancel-button Finish \
+        --ok-button Select \
+        "1 Exhibit" "Configure which exhibit to start automatically" \
+        "2 Hardening" "Harden the station" \
+        "3 Graphics & Input" "Configure graphics and input devices" \
+        "4 Localization Options" "Set up language and regional settings to match your location" \
+        "5 System Information" "Display operating system and hardware information" \
+        3>&1 1>&2 2>&3)
     RET=$?
     if [ $RET -eq 1 ]; then
         do_finish
@@ -91,7 +99,7 @@ do_main_menu() {
             3\ *) do_graphics_and_input_menu ;;
             4\ *) do_localization_menu ;;
             5\ *) do_system_information_menu ;;
-            *) "$DIALOG" --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
+            *) "$DIALOG" --msgbox "Programmer error: unrecognized option $FUN" 20 60 1 ;;
         esac || "$DIALOG" --msgbox "There was an error running option $FUN" 20 60 1
     fi
 }
