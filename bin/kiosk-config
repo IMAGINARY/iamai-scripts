@@ -4,6 +4,11 @@
 
 DIALOG=whiptail
 ASK_TO_REBOOT=0
+CONFIG_FILE="/etc/default/kiosk"
+
+reload_config_file() {
+    . "$CONFIG_FILE"
+}
 
 calc_wt_size() {
   # NOTE: it's tempting to redirect stderr to /dev/null, so supress error 
@@ -44,6 +49,17 @@ do_finish() {
 
 do_unimplemented() {
     "$DIALOG" --msgbox "Not implemented yet"  0 0 1
+}
+
+set_config_variable() {
+    local AUG_CMD="
+        set /augeas/load/Shellvars/lens \"Shellvars.lns\"
+        set /augeas/load/Shellvars/incl[.] \"${CONFIG_FILE}\"
+        load
+        set /files/${CONFIG_FILE}/$1 \"$2\"
+    "
+    augtool -s --noautoload <<< "$AUG_CMD" &&
+        reload_config_file
 }
 
 do_exhibit_menu() {
@@ -123,5 +139,6 @@ fi
 
 calc_wt_size
 while true; do
+    reload_config_file
     do_main_menu
 done
