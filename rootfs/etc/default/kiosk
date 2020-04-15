@@ -6,3 +6,7 @@ INIT_EXHIBIT=
 
 # Launch this exhibit
 LAUNCH_EXHIBIT=
+
+# Run exhibit in a loop, e.g. if it crashes or quits for any other reason.
+# Set to true or false.
+LOOP_MODE=true
