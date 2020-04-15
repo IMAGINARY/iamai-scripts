@@ -182,8 +182,52 @@ do_exhibit_menu() {
     done
 }
 
+is_overlayroot_enabled() {
+    mount | grep "^overlayroot on / type overlay" &> /dev/null;
+}
+
+do_overlayroot_menu() {
+    local MENU_TEXT
+    OVERLAYROOT_STATUS_TEXT=$((is_overlayroot_enabled && echo "ENABLED") || echo "DISABLED")
+    MENU_TEXT="In read-only mode, changes to the local file system will not be permanent and be gone after reboot.\n"
+    MENU_TEXT+="\n"
+    MENU_TEXT+="It looks like read-only mode is currently ${OVERLAYROOT_STATUS_TEXT}.\n"
+    MENU_TEXT+="Note that this setting will only become active after reboot.\n"
+    MENU_TEXT+="\n"
+    MENU_TEXT+="Enable read-only mode? Press <ESC> to abort.\n"
+    "$DIALOG" --title "Toggle read-only mode" \
+        --yesno "$MENU_TEXT" 0 0
+    case "$?" in
+        0)
+            enable-overlayroot && ASK_TO_REBOOT=1
+            ;;
+        1)
+            disable-overlayroot && ASK_TO_REBOOT=1
+            ;;
+        255)
+            return 0
+            ;;
+        *) error_unrecognized_option "$RET" ;;
+    esac || error_processing_option "$RET"
+}
+
 do_hardening_menu() {
-    do_unimplemented
+    local FUN RET
+    FUN=$("$DIALOG" --title "Hardening settings" \
+        --menu "" 0 0 0 \
+        --cancel-button Back \
+        --ok-button Select \
+        "1 Read-only mode" "Switch between read-only and read-write mode for the system partition" \
+        3>&1 1>&2 2>&3)
+    RET=$?
+    if [ $RET -eq 1 ]; then
+        return 0
+    elif [ $RET -eq 0 ]; then
+        case "$FUN" in
+            1\ *) do_overlayroot_menu ;;
+            *) error_unrecognized_option "$FUN" ;;
+        esac || error_processing_option "$FUN"
+    fi
 }
 
 do_graphics_and_input_menu() {
