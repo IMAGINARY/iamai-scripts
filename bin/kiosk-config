@@ -250,8 +250,42 @@ do_hardening_menu() {
     fi
 }
 
+do_hidecursor_menu() {
+    local MENU_TEXT
+    HIDECURUSOR_STATUS_TEXT=$(([ "$HIDE_CURSOR" = "true" ] && echo "ENABLED") || echo "DISABLED")
+    MENU_TEXT="Hide or show the system cursor while the exhibit is running."
+    MENU_TEXT="Note that the exhibit itself might apply its own cursor settings.\n"
+    MENU_TEXT+="\n"
+    MENU_TEXT+="It looks like cursor hiding is currently ${HIDECURUSOR_STATUS_TEXT}.\n"
+    MENU_TEXT+="\n"
+    MENU_TEXT+="Enable cursor hiding? Press <ESC> to abort.\n"
+    "$DIALOG" --title "Toggle cursor hiding" \
+        --yesno "$MENU_TEXT" 0 0
+    case "$?" in
+        0) set_config_variable "HIDE_CURSOR" "true" ;;
+        1) set_config_variable "HIDE_CURSOR" "false" ;;
+        255) return 0 ;;
+        *) error_unrecognized_option "$RET" ;;
+    esac || "$DIALOG" --msgbox "Error applying cursor hiding setting" 0 0
+}
+
 do_graphics_and_input_menu() {
-    do_unimplemented
+    local FUN RET
+    FUN=$("$DIALOG" --title "Graphics & Input" \
+        --menu "" 0 0 0 \
+        --cancel-button Back \
+        --ok-button Select \
+        "1 Hide cursor" "Enable or disable cursor hiding" \
+        3>&1 1>&2 2>&3)
+    RET=$?
+    if [ $RET -eq 1 ]; then
+        return 0
+    elif [ $RET -eq 0 ]; then
+        case "$FUN" in
+            1\ *) do_hidecursor_menu ;;
+            *) error_unrecognized_option "$FUN" ;;
+        esac || error_processing_option "$FUN"
+    fi
 }
 
 do_localization_menu() {

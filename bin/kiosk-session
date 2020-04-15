@@ -27,7 +27,7 @@ xset s off
 
 exec_exhibit() {
     local CMD=()
-    CMD+=( hidecursor )
+    [ "$HIDE_CURSOR" = true ] && CMD+=( hidecursor )
     [ "$LOOP_MODE" = true ] && CMD+=( repeat-exhibit )
     CMD+=( exhibit-default )
     exec "${CMD[@]}"
