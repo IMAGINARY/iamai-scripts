@@ -38,7 +38,7 @@ error_processing_option() {
 
 do_finish() {
   if [ $ASK_TO_REBOOT -eq 1 ]; then
-    "$DIALOG" --yesno "Would you like to reboot now?" 20 60 2
+    "$DIALOG" --yesno "Would you like to reboot now?" 0 0
     if [ $? -eq 0 ]; then # yes
       sync
       reboot
@@ -59,7 +59,8 @@ set_config_variable() {
         set /files/${CONFIG_FILE}/$1 \"$2\"
     "
     augtool -s --noautoload <<< "$AUG_CMD" &&
-        reload_config_file
+        reload_config_file &&
+        ASK_TO_REBOOT=1
 }
 
 do_select_initializer() {
