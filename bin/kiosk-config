@@ -62,8 +62,67 @@ set_config_variable() {
         reload_config_file
 }
 
+do_select_exhibit() {
+    local EXHIBITS MENU_ITEMS FUN RET
+    EXHIBITS=$(find /opt/kiosk-scripts/bin/launch -perm -a=x -name "exhibit-*")
+    MENU_ITEMS=()
+    for EXHIBIT in $EXHIBITS; do
+      MENU_ITEMS+=( "$EXHIBIT" "" )
+    done
+    "$DIALOG" --title "Exhibit selection" \
+        --menu " Select the exhibit to start automatically" 0 0 0 \
+        --cancel-button Back \
+        --ok-button Select \
+        "${MENU_ITEMS[@]}"\
+        3>&1 1>&2 2>&3
+}
+
+do_custom_exhibit() {
+    "$DIALOG" --title "Exhibit selection" \
+        --inputbox "Enter a command" 0 $D_WIDTH "" \
+        --cancel-button Back \
+        3>&1 1>&2 2>&3
+}
+
 do_exhibit_menu() {
-    do_unimplemented
+    while true; do
+        local FUN RET
+        reload_config_file
+        FUN=$("$DIALOG" --title "Exhibit selection" \
+            --menu "Set system-wide default exhibit.\n\nCurrent exhibit: \"$LAUNCH_EXHIBIT\"" 0 $D_WIDTH 0 \
+            --cancel-button Back \
+            --ok-button Select \
+            "1 Pre-installed" "Set one of the pre-installed exhibit launchers" \
+            "2 Custom" "Enter a custom command" \
+            "3 None" "Do not set a system-wide default exhibit" \
+            3>&1 1>&2 2>&3)
+        RET=$?
+        if [ $RET -eq 1 ]; then
+            return 0
+        elif [ $RET -eq 0 ]; then
+            local CMD=""
+            case "$FUN" in
+                1\ *)
+                    CMD=$(do_select_exhibit)
+                    RET=$?
+                    ;;
+                2\ *)
+                    CMD=$(do_custom_exhibit)
+                    RET=$?
+                    ;;
+                3\ *)
+                    CMD=""
+                    RET=0
+                    ;;
+                *) error_unrecognized_option "$FUN" ;;
+            esac || error_processing_option "$FUN"
+        fi
+        
+        if [ $RET -eq 0 ]; then
+            set_config_variable "LAUNCH_EXHIBIT" "$CMD" \
+                || "$DIALOG" --msgbox "Error setting system-wide default exhibit" 0 0
+        fi
+    done
 }
 
 do_hardening_menu() {
