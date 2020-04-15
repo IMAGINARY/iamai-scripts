@@ -62,18 +62,50 @@ set_config_variable() {
         reload_config_file
 }
 
-do_select_exhibit() {
-    local EXHIBITS MENU_ITEMS FUN RET
-    EXHIBITS=$(find /opt/kiosk-scripts/bin/launch -perm -a=x -name "exhibit-*")
+do_select_initializer() {
+    local CMD CMDS MENU_ITEMS FUN RET
+    CMDS=$(find /opt/kiosk-scripts/bin/init -perm -a=x -name "init-*")
     MENU_ITEMS=()
-    for EXHIBIT in $EXHIBITS; do
-      MENU_ITEMS+=( "$EXHIBIT" "" )
+    for CMD in $CMDS; do
+      MENU_ITEMS+=( "$CMD" "" )
     done
-    "$DIALOG" --title "Exhibit selection" \
-        --menu " Select the exhibit to start automatically" 0 0 0 \
+    if [ -n "$CMDS" ]; then
+        "$DIALOG" --title "Exhibit initializer selection" \
+            --menu "Select the exhibit initializer to start automatically" 0 0 0 \
+            --cancel-button Back \
+            --ok-button Select \
+            "${MENU_ITEMS[@]}"\
+            3>&1 1>&2 2>&3
+    else
+        "$DIALOG" --msgbox "No pre-installed exhibit initializers found." 0 0 3>&1 1>&2 2>&3
+        return 1
+    fi
+}
+
+do_select_exhibit() {
+    local CMD CMDS MENU_ITEMS FUN RET
+    CMDS=$(find /opt/kiosk-scripts/bin/launch -perm -a=x -name "exhibit-*")
+    MENU_ITEMS=()
+    for CMD in $CMDS; do
+      MENU_ITEMS+=( "$CMD" "" )
+    done
+    if [ -n "$CMDS" ]; then
+        "$DIALOG" --title "Exhibit selection" \
+            --menu " Select the exhibit to start automatically" 0 0 0 \
+            --cancel-button Back \
+            --ok-button Select \
+            "${MENU_ITEMS[@]}"\
+            3>&1 1>&2 2>&3
+    else
+        "$DIALOG" --msgbox "No pre-installed exhibits found." 0 0 3>&1 1>&2 2>&3
+        return 1
+    fi
+}
+
+do_custom_initializer() {
+    "$DIALOG" --title "Exhibit initializer selection" \
+        --inputbox "Enter a command" 0 $D_WIDTH "" \
         --cancel-button Back \
-        --ok-button Select \
-        "${MENU_ITEMS[@]}"\
         3>&1 1>&2 2>&3
 }
 
@@ -86,15 +118,22 @@ do_custom_exhibit() {
 
 do_exhibit_menu() {
     while true; do
-        local FUN RET
+        local FUN RET MENU_TEXT
         reload_config_file
+        MENU_TEXT="Set system-wide default exhibit initializer and default exhibit. The initializer will run once before the exhibit is launched.\n"
+        MENU_TEXT+="\n"
+        MENU_TEXT+="Current exhibit initializer: \"$INIT_EXHIBIT\"\n"
+        MENU_TEXT+="Current exhibit:             \"$LAUNCH_EXHIBIT\""
         FUN=$("$DIALOG" --title "Exhibit selection" \
-            --menu "Set system-wide default exhibit.\n\nCurrent exhibit: \"$LAUNCH_EXHIBIT\"" 0 $D_WIDTH 0 \
+            --menu "$MENU_TEXT" 0 0 0 \
             --cancel-button Back \
             --ok-button Select \
-            "1 Pre-installed" "Set one of the pre-installed exhibit launchers" \
-            "2 Custom" "Enter a custom command" \
-            "3 None" "Do not set a system-wide default exhibit" \
+            "1 Pre-installed initializer" "Set one of the pre-installed exhibit initializers" \
+            "2 Custom initializer" "Enter a custom exhibit initializer command" \
+            "3 No initializer" "Do not set a system-wide default exhibit initializer" \
+            "4 Pre-installed exhibit" "Set one of the pre-installed exhibit launchers" \
+            "5 Custom exhibit" "Enter a custom exhibit command" \
+            "6 No exhibit" "Do not set a system-wide default exhibit" \
             3>&1 1>&2 2>&3)
         RET=$?
         if [ $RET -eq 1 ]; then
@@ -103,14 +142,26 @@ do_exhibit_menu() {
             local CMD=""
             case "$FUN" in
                 1\ *)
-                    CMD=$(do_select_exhibit)
+                    CMD=$(do_select_initializer)
                     RET=$?
                     ;;
                 2\ *)
-                    CMD=$(do_custom_exhibit)
+                    CMD=$(do_custom_initializer)
                     RET=$?
                     ;;
                 3\ *)
+                    CMD=""
+                    RET=0
+                    ;;
+                4\ *)
+                    CMD=$(do_select_exhibit)
+                    RET=$?
+                    ;;
+                5\ *)
+                    CMD=$(do_custom_exhibit)
+                    RET=$?
+                    ;;
+                6\ *)
                     CMD=""
                     RET=0
                     ;;
@@ -119,8 +170,13 @@ do_exhibit_menu() {
         fi
         
         if [ $RET -eq 0 ]; then
-            set_config_variable "LAUNCH_EXHIBIT" "$CMD" \
-                || "$DIALOG" --msgbox "Error setting system-wide default exhibit" 0 0
+            if [[ "$FUN" = "1 "* || "$FUN" = "2 "* || "$FUN" = "3 "* ]]; then
+                set_config_variable "INIT_EXHIBIT" "$CMD" \
+                    || "$DIALOG" --msgbox "Error setting system-wide default exhibit initializer" 0 0
+            else
+                set_config_variable "LAUNCH_EXHIBIT" "$CMD" \
+                    || "$DIALOG" --msgbox "Error setting system-wide default exhibit" 0 0
+            fi
         fi
     done
 }
