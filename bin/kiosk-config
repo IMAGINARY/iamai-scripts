@@ -338,8 +338,46 @@ do_graphics_and_input_menu() {
     fi
 }
 
+do_change_locale() {
+    dpkg-reconfigure locales &&
+        ASK_TO_REBOOT=1
+}
+
+do_configure_keyboard() {
+    printf "Reloading keymap. This may take a short while\n"
+    dpkg-reconfigure keyboard-configuration &&
+        invoke-rc.d keyboard-setup start &&
+        setsid sh -c 'exec setupcon -k --force <> /dev/tty1 >&0 2>&1' &&
+        udevadm trigger --subsystem-match=input --action=change &&
+        ASK_TO_REBOOT=1
+}
+
+do_change_timezone() {
+    dpkg-reconfigure tzdata &&
+        ASK_TO_REBOOT=1
+}
+
 do_localization_menu() {
-    do_unimplemented
+    local FUN RET
+    FUN=$("$DIALOG" --title "Localization Options" \
+        --menu "" 0 $D_WIDTH 0 \
+        --cancel-button Back \
+        --ok-button Select \
+        "1 Locale" "Set up language and regional settings to match your location" \
+        "2 Timezone" "Set up timezone to match your location" \
+        "3 Keyboard Layout" "Set the keyboard layout to match your keyboard" \
+        3>&1 1>&2 2>&3)
+    RET=$?
+    if [ $RET -eq 1 ]; then
+        return 0
+    elif [ $RET -eq 0 ]; then
+        case "$FUN" in
+            1\ *) do_change_locale ;;
+            2\ *) do_change_timezone ;;
+            3\ *) do_configure_keyboard ;;
+            *) error_unrecognized_option "$FUN" ;;
+        esac || error_processing_option "$FUN"
+    fi
 }
 
 do_system_information_menu() {
@@ -376,7 +414,7 @@ do_main_menu() {
         "1 Exhibit" "Configure which exhibit to start automatically" \
         "2 Hardening" "Harden the station" \
         "3 Graphics & Input" "Configure graphics and input devices" \
-        "4 Localization Options" "Set up language and regional settings to match your location" \
+        "4 Localization" "Set up language and regional settings to match your location" \
         "5 System Information" "Display operating system and hardware information" \
         3>&1 1>&2 2>&3)
     RET=$?
