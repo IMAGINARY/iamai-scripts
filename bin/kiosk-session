@@ -33,4 +33,8 @@ feh --bg-max /opt/kiosk-scripts/assets/wallpaper.png --image-bg "$(< /opt/kiosk-
 PIDS="$PIDS $!"
 
 # Keep the session alive until its explicitly killed from outside
-env sleep infinity
+env sleep infinity &
+PID_SLEEP=$!
+PIDS="$PIDS $PID_SLEEP"
+
+wait $PID_SLEEP
