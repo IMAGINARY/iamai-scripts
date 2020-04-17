@@ -65,22 +65,5 @@ install-kiosk-browser
 
 # Install the exhibits
 
-# Ask if overlayroot should be activated
-echo "Do you wish to make system immutable after reboot?"
-select yn in "Immutable" "Mutable" "Keep current setting"; do
-    case $yn in
-        "Immutable") /opt/kiosk-scripts/bin/enable-overlayroot; break;;
-        "Mutable") /opt/kiosk-scripts/bin/disable-overlayroot; break;;
-        "Keep current setting") break;;
-    esac
-done
-
-
-# Prompt user for reboot
-echo "Do you wish to rebeoot now?"
-select yn in "Yes" "No"; do
-    case $yn in
-        Yes) reboot; break;;
-        No) break;;
-    esac
-done
+# Run the kiosk-config script
+ASK_TO_REBOOT=1 ./kiosk-config
