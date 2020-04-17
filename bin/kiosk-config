@@ -3,7 +3,7 @@
 # Script partially based on https://github.com/RPi-Distro/raspi-config
 
 DIALOG=whiptail
-ASK_TO_REBOOT=0
+ASK_TO_REBOOT=${ASK_TO_REBOOT:-0}
 CONFIG_FILE="/etc/default/kiosk"
 
 reload_config_file() {
