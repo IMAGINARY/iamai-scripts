@@ -193,6 +193,17 @@ is_overlayroot_enabled() {
     mount | grep "^overlayroot on / type overlay" &> /dev/null;
 }
 
+warn_overlayroot() {
+    if is_overlayroot_enabled; then
+        local MENU_TEXT
+        MENU_TEXT="Read-only mode is enabled. "
+        MENU_TEXT+="Most of your changes will be lost after reboot.\n"
+        MENU_TEXT+="\n"
+        MENU_TEXT+="You can disable read-only mode in the 'Hardening' menu."
+        "$DIALOG" --msgbox "$MENU_TEXT" 0 0
+    fi
+} 
+
 do_overlayroot_menu() {
     local MENU_TEXT
     OVERLAYROOT_STATUS_TEXT=$((is_overlayroot_enabled && echo "ENABLED") || echo "DISABLED")
@@ -442,6 +453,9 @@ do_main_menu() {
 
 # Everything else needs to be run as root
 ensure_root_privileges
+
+# Warn user if overlayroot is enabled
+warn_overlayroot
 
 calc_wt_size
 while true; do
