@@ -229,6 +229,54 @@ do_loop_exhibit_menu() {
     esac || "$DIALOG" --msgbox "Error applying loop mode setting" 0 0
 }
 
+
+get_graphical_session() {
+    local AUG_CMD="
+        set /augeas/load/Puppet/lens \"Puppet.lns\"
+        set /augeas/load/Puppet/incl[.] \"/var/lib/AccountsService/users/*\"
+        load
+        get /files/var/lib/AccountsService/users/$1/User/XSession
+    "
+    augtool -s --noautoload <<< "$AUG_CMD" | sed "s/^.* = //g"
+}
+
+set_graphical_session() {
+    local AUG_CMD="
+        set /augeas/load/Puppet/lens \"Puppet.lns\"
+        set /augeas/load/Puppet/incl[.] \"/var/lib/AccountsService/users/*\"
+        load
+        set /files/var/lib/AccountsService/users/$1/User/XSession \"$2\"
+    "
+    augtool -s --noautoload <<< "$AUG_CMD" &&
+        ASK_TO_REBOOT=1
+}
+
+do_graphical_session_menu() {
+    local MENU_TEXT FUN RET
+    MENU_TEXT="Select the graphical session for the kiosk user.\n"
+    MENU_TEXT+="\n"
+    MENU_TEXT+="Current session: $(get_graphical_session kiosk)"
+    FUN=$("$DIALOG" --title "Graphical session" \
+        --menu "$MENU_TEXT" 0 0 0 \
+        --cancel-button Back \
+        --ok-button Select \
+        "1 kiosk" "Plain X11 without window manager. Very hard to escape without a keyboard. Has issues with multiple windows and window sizing." \
+        "2 openbox" "Openbox window manager. No permanent menus and sidebars. Right click on the desktop allows to perform unsafe actions." \
+        "3 ubuntu" "Regular Ubuntu Gnome desktop environment. Not suitable for kiosk environments." \
+        3>&1 1>&2 2>&3)
+    RET=$?
+    if [ $RET -eq 1 ]; then
+        return 0
+    elif [ $RET -eq 0 ]; then
+        case "$FUN" in
+            1\ *) set_graphical_session kiosk kiosk ;;
+            2\ *) set_graphical_session kiosk openbox ;;
+            3\ *) set_graphical_session kiosk ubuntu ;;
+            *) error_unrecognized_option "$FUN" ;;
+        esac || error_processing_option "$FUN"
+    fi
+}
+
 do_hardening_menu() {
     local FUN RET
     FUN=$("$DIALOG" --title "Hardening settings" \
@@ -237,6 +285,7 @@ do_hardening_menu() {
         --ok-button Select \
         "1 Read-only Mode" "Switch between read-only and read-write mode for the system partition" \
         "2 Loop Mode" "Restart the exhibit after it quits for whatever reason" \
+        "3 Graphical Session" "Set the graphical session to use" \
         3>&1 1>&2 2>&3)
     RET=$?
     if [ $RET -eq 1 ]; then
@@ -245,6 +294,7 @@ do_hardening_menu() {
         case "$FUN" in
             1\ *) do_overlayroot_menu ;;
             2\ *) do_loop_exhibit_menu ;;
+            3\ *) do_graphical_session_menu ;;
             *) error_unrecognized_option "$FUN" ;;
         esac || error_processing_option "$FUN"
     fi
