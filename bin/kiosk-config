@@ -398,6 +398,49 @@ do_localization_menu() {
     fi
 }
 
+do_select_installer() {
+    local CMD CMDS MENU_ITEMS FUN RET
+    CMDS=$(find /opt/kiosk-scripts/bin/install -perm -a=x -name "install-*")
+    MENU_ITEMS=()
+    for CMD in $CMDS; do
+      MENU_ITEMS+=( "$CMD" "" )
+    done
+    if [ -n "$CMDS" ]; then
+        "$DIALOG" --title "Update-script selection" \
+            --menu " Select the installer to run" 0 0 0 \
+            --cancel-button Back \
+            --ok-button Select \
+            "${MENU_ITEMS[@]}"\
+            3>&1 1>&2 2>&3
+    else
+        "$DIALOG" --msgbox "No pre-installed exhibits found." 0 0 3>&1 1>&2 2>&3
+        return 1
+    fi
+}
+
+do_update_menu()  {
+    local MSG_TEXT CMD RET
+    MSG_TEXT="New versions of exhibits will only be installed if their install scripts are updated beforehand via the install-kiosk-scripts script.\n"
+    MSG_TEXT+="\n"
+    MSG_TEXT+="Run install-kiosk-scripts now?"
+    "$DIALOG" --yesno "$MSG_TEXT" 0 0
+    if [ $? -eq 0 ]; then # yes
+        install-kiosk-scripts
+    fi
+    CMD=$(do_select_installer)
+    RET=$?
+    if [ $RET -eq 0 ]; then
+        echo "Running $CMD"
+        "$CMD"
+        RET=$?
+        if [ $RET -eq 0 ]; then
+            "$DIALOG" --msgbox "Installation completed without errors." 0 0 3>&1 1>&2 2>&3
+        else
+            "$DIALOG" --msgbox "An error occurred during installation. Please check the output on the terminal." 0 0 3>&1 1>&2 2>&3
+        fi
+    fi
+}
+
 do_system_information_menu() {
     local FUN RET
     FUN=$("$DIALOG" --title "System Information" \
@@ -433,7 +476,8 @@ do_main_menu() {
         "2 Hardening" "Harden the station" \
         "3 Graphics & Input" "Configure graphics and input devices" \
         "4 Localization" "Set up language and regional settings to match your location" \
-        "5 System Information" "Display operating system and hardware information" \
+        "5 Update" "Update exhibits and install scripts" \
+        "6 System Information" "Display operating system and hardware information" \
         3>&1 1>&2 2>&3)
     RET=$?
     if [ $RET -eq 1 ]; then
@@ -444,7 +488,8 @@ do_main_menu() {
             2\ *) do_hardening_menu ;;
             3\ *) do_graphics_and_input_menu ;;
             4\ *) do_localization_menu ;;
-            5\ *) do_system_information_menu ;;
+            5\ *) do_update_menu ;;
+            6\ *) do_system_information_menu ;;
             *) error_unrecognized_option "$FUN" ;;
         esac || error_processing_option "$FUN"
     fi
