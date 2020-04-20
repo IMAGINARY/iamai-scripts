@@ -70,44 +70,47 @@ set_config_variable() {
         ASK_TO_REBOOT=1
 }
 
-do_select_initializer() {
+do_select_file() {
+    local MENU_TITLE=$1
+    local MENU_TEXT=$2
+    local ERROR_MSG=$3
+    shift 3
+    set -o noglob # otherwise the arguments to 'find' will be expanded too early
+    local FIND_ARGS=($@)
     local CMD CMDS MENU_ITEMS FUN RET
-    CMDS=$(find /opt/kiosk-scripts/bin/init -perm -a=x -name "init-*")
+    CMDS=$(find "${FIND_ARGS[@]}")
+    set +o noglob
     MENU_ITEMS=()
     for CMD in $CMDS; do
       MENU_ITEMS+=( "$CMD" "" )
     done
     if [ -n "$CMDS" ]; then
-        "$DIALOG" --title "Exhibit initializer selection" \
-            --menu "Select the exhibit initializer to start automatically" 0 0 0 \
+        "$DIALOG" --title "$MENU_TITLE" \
+            --menu "$MENU_TEXT" 0 0 0 \
             --cancel-button Back \
             --ok-button Select \
             "${MENU_ITEMS[@]}"\
             3>&1 1>&2 2>&3
     else
-        "$DIALOG" --msgbox "No pre-installed exhibit initializers found." 0 0 3>&1 1>&2 2>&3
+        "$DIALOG" --msgbox "$ERROR_MSG" 0 0 3>&1 1>&2 2>&3
         return 1
     fi
 }
 
+do_select_initializer() {
+    do_select_file \
+        "Exhibit initializer selection" \
+        "Select the exhibit initializer to start automatically" \
+        "No pre-installed exhibit initializers found." \
+        /opt/kiosk-scripts/bin/init -perm -a=x -name init-\*
+}
+
 do_select_exhibit() {
-    local CMD CMDS MENU_ITEMS FUN RET
-    CMDS=$(find /opt/kiosk-scripts/bin/launch -perm -a=x -name "exhibit-*")
-    MENU_ITEMS=()
-    for CMD in $CMDS; do
-      MENU_ITEMS+=( "$CMD" "" )
-    done
-    if [ -n "$CMDS" ]; then
-        "$DIALOG" --title "Exhibit selection" \
-            --menu " Select the exhibit to start automatically" 0 0 0 \
-            --cancel-button Back \
-            --ok-button Select \
-            "${MENU_ITEMS[@]}"\
-            3>&1 1>&2 2>&3
-    else
-        "$DIALOG" --msgbox "No pre-installed exhibits found." 0 0 3>&1 1>&2 2>&3
-        return 1
-    fi
+    do_select_file \
+        "Exhibit selection" \
+        "Select the exhibit to start automatically" \
+        "No pre-installed exhibits found." \
+        /opt/kiosk-scripts/bin/launch -perm -a=x -name exhibit-\*
 }
 
 do_custom_initializer() {
@@ -399,23 +402,11 @@ do_localization_menu() {
 }
 
 do_select_installer() {
-    local CMD CMDS MENU_ITEMS FUN RET
-    CMDS=$(find /opt/kiosk-scripts/bin/install -perm -a=x -name "install-*")
-    MENU_ITEMS=()
-    for CMD in $CMDS; do
-      MENU_ITEMS+=( "$CMD" "" )
-    done
-    if [ -n "$CMDS" ]; then
-        "$DIALOG" --title "Update-script selection" \
-            --menu " Select the installer to run" 0 0 0 \
-            --cancel-button Back \
-            --ok-button Select \
-            "${MENU_ITEMS[@]}"\
-            3>&1 1>&2 2>&3
-    else
-        "$DIALOG" --msgbox "No pre-installed exhibits found." 0 0 3>&1 1>&2 2>&3
-        return 1
-    fi
+    do_select_file \
+        "Update-script selection" \
+        "Select the installer to run" \
+        "No pre-installed exhibits found." \
+        /opt/kiosk-scripts/bin/install -perm -a=x -name install-\*
 }
 
 do_update_menu()  {
