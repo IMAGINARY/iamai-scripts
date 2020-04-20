@@ -21,20 +21,21 @@ if [ "$#" -gt 1 ]; then
 fi
 
 # Source system wide default values
-DEFAULTS_FILE="/etc/default/kiosk"
-[ -r "$DEFAULTS_FILE" ] && . "$DEFAULTS_FILE" 
+SYSTEM_DEFAULTS_FILE="/etc/default/kiosk"
+[ -r "$SYSTEM_DEFAULTS_FILE" ] && . "$SYSTEM_DEFAULTS_FILE" 
 
+# Source user-defined default values
 CONFIG_DIR="${XDG_CONFIG_HOME:-"$HOME/.config"}/kiosk"
+USER_DEFAULTS_FILE="${CONFIG_DIR}/default"
+[ -r "$USER_DEFAULTS_FILE" ] && . "$USER_DEFAULTS_FILE" 
 
 case $( basename "$0" ) in
     init-default)
-        USER_CMD="$CONFIG_DIR/init-default"
-        SYSTEM_CMD="$INIT_EXHIBIT"
+        CMD="$INIT_EXHIBIT"
         MODE="init"
         ;;
     exhibit-default)
-        USER_CMD="$CONFIG_DIR/exhibit-default"
-        SYSTEM_CMD="$LAUNCH_EXHIBIT"
+        CMD="$LAUNCH_EXHIBIT"
         MODE="exhibit"
         ;;
     *)
@@ -42,14 +43,6 @@ case $( basename "$0" ) in
         exit 1
         ;;
 esac
-
-if command -v "$USER_CMD"; then
-    # Use user-defined command
-    CMD="$USER_CMD"
-elif [ -n "$SYSTEM_CMD" ]; then
-    # Use system wide default
-    CMD="$SYSTEM_CMD"
-fi
 
 if [[ "$*" == *--test* ]]; then
     # Check if default command has been set and exit

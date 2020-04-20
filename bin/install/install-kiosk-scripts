@@ -8,6 +8,13 @@ fi
 
 set -e
 
+# Install dependencies
+apt install \
+    augeas-tools \
+    git \
+    inxi \
+    '' # dummy entry to terminate the list
+
 # retrieve files via git
 INSTALL_DIR="/opt/kiosk-scripts"
 BRANCH="wip"

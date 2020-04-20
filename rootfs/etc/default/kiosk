@@ -6,3 +6,12 @@ INIT_EXHIBIT=
 
 # Launch this exhibit
 LAUNCH_EXHIBIT=
+
+# Run exhibit in a loop, e.g. if it crashes or quits for any other reason.
+# Set to true or false.
+LOOP_MODE=true
+
+# Hide or show the system cursor while the exhibit is running.
+# Note that the exhibit itself might apply its own cursor settings.
+# Set to true or false.
+HIDE_CURSOR=true
