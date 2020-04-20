@@ -64,6 +64,15 @@ source "/opt/kiosk-scripts/rootfs/etc/profile.d/kiosk-bin-path.sh"
 install-kiosk-browser
 
 # Install the exhibits
+install-ai-jam
+install-beating-crime-with-ai
+install-ethics-vehicles
+install-neural-numbers
+install-reinforcement-learning
+install-simple-networks
+install-sumory
+install-talk-to-me
+install-treasure-hunt
 
 # Run the kiosk-config script
 ASK_TO_REBOOT=1 ./kiosk-config
