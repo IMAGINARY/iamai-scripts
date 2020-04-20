@@ -5,7 +5,7 @@
 INIT_EXHIBIT=
 
 # Launch this exhibit
-LAUNCH_EXHIBIT=
+LAUNCH_EXHIBIT="gnome-terminal --wait --full-screen --hide-menubar -- /usr/bin/bash -c 'ASK_TO_REBOOT=1 /opt/kiosk-scripts/bin/kiosk-config'"
 
 # Run exhibit in a loop, e.g. if it crashes or quits for any other reason.
 # Set to true or false.
