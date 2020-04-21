@@ -10,6 +10,12 @@ function finish {
 }
 trap finish SIGINT SIGTERM EXIT
 
+# Adjust the volume of the default mic to be
+# 1) louder than normal / loud enough
+# 2) prevent clipping
+pactl set-source-volume "@DEFAULT_SOURCE@" "75%" &
+PIDS="$PIDS $!"
+
 # Launch the exhibit in the background
 talk-to-me \
     --fullscreen \
