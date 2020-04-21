@@ -452,15 +452,20 @@ do_system_information_menu() {
     if [ $RET -eq 1 ]; then
         return 0
     elif [ $RET -eq 0 ]; then
+        local INFO INXI_CMD
         case "$FUN" in
             1\ *)
-                "$DIALOG" --textbox /dev/stdin --scrolltext 0 $D_WIDTH <<<"$(inxi -F -w)"
+                INXI_CMD="inxi -F -w"
                 ;;
             2\ *)
-                "$DIALOG" --textbox /dev/stdin --scrolltext 0 $D_WIDTH <<<"$(inxi -F -d -f -i -l -m -o -p -r -t -u -x -w)"
+                INXI_CMD="inxi -F -d -f -i -l -m -o -p -r -t -u -x -w"
                 ;;
             *) error_unrecognized_option "$FUN" ;;
-        esac || error_processing_option "$FUN"
+        esac
+        # FIXME: Without the bash/export workaround, inxi never quits
+        # No idea what's the problem here!?
+        INFO=$(bash -c "export > /dev/null; $INXI_CMD")
+        "$DIALOG" --scrolltext --msgbox "$INFO" 0 $D_WIDTH
     fi
 }
 
