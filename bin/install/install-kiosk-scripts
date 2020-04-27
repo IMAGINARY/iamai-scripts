@@ -28,7 +28,7 @@ git checkout "$BRANCH" 2> /dev/null || git checkout -b "$BRANCH"
 if [[ `git status --porcelain` ]]; then
     git reset --hard
     echo "There were local changes. Re-running ..."
-    exec "./bin/install/$(basename $0)" "$@"
+    exec "./bin/install/install-kiosk-scripts" "$@"
 else
     # no local changes, check for remote changes
     git remote remove origin &> /dev/null || true
@@ -46,7 +46,7 @@ else
         git reset --hard "origin/$BRANCH"
         git checkout "origin/$BRANCH"
         echo "There were remote changes. Re-running ..."
-        exec "./bin/install/$(basename $0)" "$@"
+        exec "./bin/install/install-kiosk-scripts" "$@"
     fi
 fi
 
