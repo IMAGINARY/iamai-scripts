@@ -58,7 +58,14 @@ bootstrap() {
     adduser kiosk audio
 
     # Fetch and execute kiosk-scripts installer; put kiosk-scripts into PATH
-    curl -L https://github.com/IMAGINARY/iamai-scripts/raw/master/bin/install/install-kiosk-scripts | bash
+    local INSTALL_KIOSK_SCRIPTS_ARGS=()
+    if [[ "$*" == *--no-update-grub* ]]; then
+        INSTALL_KIOSK_SCRIPTS_ARGS+=( "--no-update-grub" )
+    fi
+    if [[ "$*" == *--confirm-rsync-overwrite* ]]; then
+        INSTALL_KIOSK_SCRIPTS_ARGS+=( "--confirm-rsync-overwrite" )
+    fi
+    curl -L https://github.com/IMAGINARY/iamai-scripts/raw/master/bin/install/install-kiosk-scripts | bash -s -- "${INSTALL_KIOSK_SCRIPTS_ARGS[@]}"
     source "/opt/kiosk-scripts/rootfs/etc/profile.d/kiosk-bin-path.sh"
 
     # Install dependencies common to many exhibits
