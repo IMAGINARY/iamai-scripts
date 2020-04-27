@@ -83,7 +83,7 @@ bootstrap() {
     install-treasure-hunt
 
     # Run the kiosk-config script
-    ASK_TO_REBOOT=1 ./kiosk-config
+    ASK_TO_REBOOT=1 /opt/kiosk-scripts/bin/kiosk-config
 }
 
 bootstrap "$@"
