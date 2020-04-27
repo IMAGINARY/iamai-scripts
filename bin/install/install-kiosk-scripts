@@ -9,8 +9,11 @@ fi
 set -e
 
 install() {
+    # don't prompt during installations
+    export DEBIAN_FRONTEND=noninteractive
+    
     # Install dependencies
-    apt install \
+    apt install -yq \
         augeas-tools \
         git \
         inxi \
