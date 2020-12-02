@@ -54,6 +54,7 @@ rm "${BATCH_FILE}" "${BATCH_FILE}.sh"
 ./modify-os-cfg
 
 # disable checking for updates, auto updates, upgrades and notifications
+apt remove -yq update-manager
 ./disable-auto-updates
 systemctl disable apt-daily.service apt-daily-upgrade.service
 systemctl disable apt-daily.timer apt-daily-upgrade.timer
