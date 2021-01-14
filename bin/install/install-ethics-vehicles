@@ -1,6 +1,6 @@
 #!/bin/bash
 
-COMMITISH="master"
+COMMITISH="v1.0.0"
 REPO_URL="https://github.com/IMAGINARY/ethics-vehicles"
 INSTALL_DIR="/opt/ethics-vehicles"
 
