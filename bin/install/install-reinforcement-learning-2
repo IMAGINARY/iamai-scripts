@@ -1,0 +1,8 @@
+#!/bin/bash
+
+COMMITISH="8459b74cb52c53dfff8acdb5f13574ffa06fd599"
+REPO_URL="https://github.com/IMAGINARY/reinforcement-learning-2.git"
+INSTALL_DIR="/opt/reinforcement-learning"
+
+"${BASH_SOURCE%/*}/../internal/install-source-from-git" "$COMMITISH" "$REPO_URL" "$INSTALL_DIR"
+exit $?
