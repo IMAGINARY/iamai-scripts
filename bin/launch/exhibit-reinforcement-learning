@@ -14,7 +14,9 @@ trap finish SIGINT SIGTERM EXIT
 kiosk-browser $KIOSK_OPTS \
     --kiosk \
     --fullscreen \
-    --hide-scrollbars \
+    --disable-drag \
+    --disable-selection \
+    --overflow=hidden \
     --reload-idle "$(( 3 * 60 ))" \
     --reload-unresponsive 60 \
     --serve /opt/reinforcement-learning/dist \
