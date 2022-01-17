@@ -1,6 +1,6 @@
 #!/bin/bash
 
-COMMITISH="v1.4.0"
+COMMITISH="v1.4.1"
 REPO_URL="https://github.com/IMAGINARY/gradient-descent"
 INSTALL_DIR="/opt/gradient-descent"
 
