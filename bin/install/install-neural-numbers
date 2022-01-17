@@ -1,6 +1,6 @@
 #!/bin/bash
 
-COMMITISH="v0.2.0"
+COMMITISH="v0.7.0"
 REPO_URL="https://github.com/IMAGINARY/neural-numbers.git"
 INSTALL_DIR="/opt/neural-numbers"
 
