@@ -18,7 +18,7 @@ kiosk-browser $KIOSK_OPTS \
     --reload-idle "$(( 3 * 60 ))" \
     --reload-unresponsive 60 \
     --serve /opt/sumory \
-    common/appslider/appslider.html?set=sumory &
+    index.html &
 PID_UI=$!
 PIDS="$PIDS $PID_UI"
 

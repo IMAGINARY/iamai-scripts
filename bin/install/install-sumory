@@ -1,7 +1,7 @@
 #!/bin/bash
 
-COMMITISH="master"
-REPO_URL="https://github.com/IMAGINARY/ai-to-touch-prototypes.git"
+COMMITISH="v1.1.0"
+REPO_URL="https://github.com/IMAGINARY/sumory.git"
 INSTALL_DIR="/opt/sumory"
 
 "${BASH_SOURCE%/*}/../internal/install-source-from-git" "$COMMITISH" "$REPO_URL" "$INSTALL_DIR"
