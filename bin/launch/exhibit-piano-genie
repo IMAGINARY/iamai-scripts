@@ -19,7 +19,7 @@ kiosk-browser $KIOSK_OPTS \
     --overflow=hidden \
     --reload-idle "$(( 3 * 60 ))" \
     --reload-unresponsive 60 \
-    --serve "${INSTALL_DIR}" \
+    --serve "/opt/piano-genie" \
     index.html &
 PID_UI=$!
 PIDS="$PIDS $PID_UI"
