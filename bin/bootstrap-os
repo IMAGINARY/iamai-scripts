@@ -74,6 +74,7 @@ bootstrap() {
     install-ai-jam
     install-beating-crime-with-ai
     install-ethics-vehicles
+    install-gradient-descent
     install-neural-numbers
     install-reinforcement-learning
     install-simple-networks
