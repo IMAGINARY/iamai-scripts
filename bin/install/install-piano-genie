@@ -3,6 +3,18 @@
 COMMITISH="v1.2.0"
 REPO_URL="https://github.com/IMAGINARY/piano-genie.git"
 INSTALL_DIR="/opt/piano-genie"
+CONFIG_FILE="${INSTALL_DIR}/config.json"
 
 "${BASH_SOURCE%/*}/../internal/install-source-from-git" "$COMMITISH" "$REPO_URL" "$INSTALL_DIR"
+
+[ -f "$CONFIG_FILE" ] || cat >"${CONFIG_FILE}" <<EOL
+{
+  "showInfoButton": false,
+  "showConfigButton": false,
+  "showFullScreenButton": false,
+  "showInputKeysText": false,
+  "showInputInstructions": false
+}
+EOL
+
 exit $?

@@ -10,19 +10,6 @@ function finish {
 }
 trap finish SIGINT SIGTERM EXIT
 
-INSTALL_DIR="/opt/piano-genie"
-CONFIG_FILE="${INSTALL_DIR}/config.json"
-
-[ -f "$CONFIG_FILE" ] || cat >"${CONFIG_FILE}" <<EOL
-{
-  "showInfoButton": false,
-  "showConfigButton": false,
-  "showFullScreenButton": false,
-  "showInputKeysText": false,
-  "showInputInstructions": false
-}
-EOL
-
 # Launch the exhibit in the background
 kiosk-browser $KIOSK_OPTS \
     --kiosk \
