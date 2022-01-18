@@ -10,6 +10,22 @@ function finish {
 }
 trap finish SIGINT SIGTERM EXIT
 
+# Create the config file if it does not exist
+INSTALL_DIR="/opt/ethics-vehicles"
+CONFIG_FILE="${INSTALL_DIR}/config.iamai.local.json"
+[ -f "$CONFIG_FILE" ] || cat >"${CONFIG_FILE}" <<EOL
+{
+  "defaultLanguage": "en",
+  "languages": [
+    "de",
+    "en"
+  ],
+  "showLanguageSwitcher": false,
+  "autoAdvance": false,
+  "backgroundImage": "./assets/images/street.png"
+}
+EOL
+
 # Launch the exhibit in the background
 kiosk-browser $KIOSK_OPTS \
     --kiosk \
@@ -18,7 +34,7 @@ kiosk-browser $KIOSK_OPTS \
     --reload-idle "$(( 3 * 60 ))" \
     --reload-unresponsive 60 \
     --serve /opt/ethics-vehicles \
-    index.html &
+    index.html?config=config.iamai.local.json &
 PID_UI=$!
 PIDS="$PIDS $PID_UI"
 
