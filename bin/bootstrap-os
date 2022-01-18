@@ -78,6 +78,7 @@ bootstrap() {
     install-neural-numbers
     install-piano-genie
     install-reinforcement-learning
+    install-reinforcement-learning-2
     install-simple-networks
     install-sumory
     install-talk-to-me
