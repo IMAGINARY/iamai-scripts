@@ -76,6 +76,7 @@ bootstrap() {
     install-ethics-vehicles
     install-gradient-descent
     install-neural-numbers
+    install-piano-genie
     install-reinforcement-learning
     install-simple-networks
     install-sumory
