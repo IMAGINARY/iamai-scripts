@@ -20,6 +20,7 @@ PIDS="$PIDS $!"
 talk-to-me \
     --fullscreen \
     --kiosk \
+    --lang=de \
     --idle-timeout "$(( 3 * 100 ))" \
     &
 PID_UI=$!
