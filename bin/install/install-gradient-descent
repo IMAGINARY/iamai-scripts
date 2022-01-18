@@ -8,7 +8,7 @@ INSTALL_DIR="/opt/gradient-descent"
 
 cat >/opt/gradient-descent/config.iamai.local.json <<EOL
 {
-  "defaultLanguage": "en",
+  "defaultLanguage": "de",
   "useGamepads": true,
   "useScreenControls": false,
   "useKeyboardControls": true,
