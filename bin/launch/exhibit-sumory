@@ -20,7 +20,7 @@ kiosk-browser $KIOSK_OPTS \
     --reload-idle "$(( 3 * 60 ))" \
     --reload-unresponsive 60 \
     --serve /opt/sumory \
-    index.html &
+    index.html?lang=de &
 PID_UI=$!
 PIDS="$PIDS $PID_UI"
 
