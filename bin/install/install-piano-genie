@@ -1,6 +1,6 @@
 #!/bin/bash
 
-COMMITISH="v1.2.0"
+COMMITISH="v1.2.1"
 REPO_URL="https://github.com/IMAGINARY/piano-genie.git"
 INSTALL_DIR="/opt/piano-genie"
 CONFIG_FILE="${INSTALL_DIR}/config.json"
