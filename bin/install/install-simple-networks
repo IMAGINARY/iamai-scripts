@@ -1,6 +1,6 @@
 #!/bin/bash
 
-COMMITISH="v0.1.0"
+COMMITISH="feature/pasch-workshop"
 REPO_URL="https://github.com/IMAGINARY/simple-networks.git"
 INSTALL_DIR="/opt/simple-networks"
 
