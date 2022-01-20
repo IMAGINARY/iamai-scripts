@@ -21,7 +21,7 @@ install() {
 
     # retrieve files via git
     INSTALL_DIR="/opt/kiosk-scripts"
-    BRANCH="wip"
+    BRANCH="main"
     mkdir -p "$INSTALL_DIR"
     cd "$INSTALL_DIR"
     git init
