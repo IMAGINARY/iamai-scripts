@@ -36,6 +36,7 @@ bootstrap() {
         git \
         htop \
         jackd2 \
+        joystick \
         mesa-utils \
         net-tools \
         nginx \
