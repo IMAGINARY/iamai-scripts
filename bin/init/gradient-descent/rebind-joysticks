@@ -1,0 +1,42 @@
+#!/usr/bin/bash
+
+# Change the IDs to match the USB port on your machine
+JS0_USB_ID=1-2:1.0
+JS1_USB_ID=1-1:1.0
+
+echo "Unbinding all joysticks ..."
+find /sys/class/input/ -name 'js*' -print0 | while read -r -d '' js
+do
+  echo "  Unbinding $js"
+  DEVICE_JS="$(readlink -f "$js/device")"
+  DEVICE_INPUT="$(echo "$DEVICE_JS" | sed "s|/input/.*$||")"
+  DEVICE_INPUT_ID="$(basename "$DEVICE_INPUT")"
+  echo "$DEVICE_INPUT_ID" > "$DEVICE_INPUT/driver/unbind"
+done
+
+# Unbind the USB ports where the Joysticks are supposed to be connected to
+echo "Unbinding USB devices ..."
+
+echo "  Unbinding $JS0_USB_ID"
+DRIVER_JS0_USB_ID="$(readlink -f "/sys/bus/usb/devices/$JS0_USB_ID/driver")"
+echo "$JS0_USB_ID" > "$DRIVER_JS0_USB_ID/unbind"
+
+echo "  Unbinding $JS1_USB_ID"
+DRIVER_JS1_USB_ID="$(readlink -f "/sys/bus/usb/devices/$JS1_USB_ID/driver")"
+echo "$JS1_USB_ID" > "$DRIVER_JS1_USB_ID/unbind"
+
+# Wait a bit for the devices to unbound
+sleep 1
+
+# Rebind the joysticks in the order we want them to appear in /dev/input/
+echo "Re-binding the USB devices ..."
+
+echo "  Binding $JS0_USB_ID"
+echo "$JS0_USB_ID" > "$DRIVER_JS0_USB_ID/bind"
+sleep 1
+echo "  js0 now belongs to $(readlink -f "/sys/class/input/js0")"
+
+echo "  Binding $JS1_USB_ID"
+echo "$JS1_USB_ID" > "$DRIVER_JS1_USB_ID/bind"
+sleep 1
+echo "  js1 now belongs to $(readlink -f "/sys/class/input/js1")"
