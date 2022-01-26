@@ -1,8 +1,13 @@
 #!/bin/bash
 
-COMMITISH="8459b74cb52c53dfff8acdb5f13574ffa06fd599"
+COMMITISH="v0.1.0"
 REPO_URL="https://github.com/IMAGINARY/reinforcement-learning-2.git"
 INSTALL_DIR="/opt/reinforcement-learning-2"
+CONFIG_FILE="${INSTALL_DIR}/settings-exhibit.yml"
 
 "${BASH_SOURCE%/*}/../internal/install-source-from-git" "$COMMITISH" "$REPO_URL" "$INSTALL_DIR"
-exit $?
+
+# Create the config file if it does not exist
+[ -f "$CONFIG_FILE" ] || cat >"${CONFIG_FILE}" <<EOL
+# dummy settings file for future use
+EOL
