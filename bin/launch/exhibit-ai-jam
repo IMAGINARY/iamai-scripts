@@ -11,12 +11,13 @@ function finish {
 trap finish SIGINT SIGTERM EXIT
 
 # Launch the Google Magenta backend
-cd /opt/ai-jam
+cd /opt/ai-jam || exit
 ./RUN.sh &
 PIDS="$PIDS $!"
 
 function magenta_midi_ports_available() {
-    local MAGENTA_MIDI_PORTS=$( ( aconnect -i && aconnect -o ) | grep magenta_ | sed "s/^[^']*'magenta_//g" | sed "s/[[:space:]']*'.*//g" | sort | uniq )
+    local MAGENTA_MIDI_PORTS
+    MAGENTA_MIDI_PORTS=$( ( aconnect -i && aconnect -o ) | grep magenta_ | sed "s/^[^']*'magenta_//g" | sed "s/[[:space:]']*'.*//g" | sort | uniq )
     true \
         && grep clock <<< "$MAGENTA_MIDI_PORTS" \
         && grep drums_in <<< "$MAGENTA_MIDI_PORTS" \
