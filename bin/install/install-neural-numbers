@@ -14,9 +14,8 @@ CONFIG_FILE="${INSTALL_DIR}/config.iamai.local.json"
   "idleReload": 300,
   "lastTrainStepTimeout": 1.5,
   "languages": {
-    "en": "English",
     "de": "Deutsch",
-    "es": "Español"
+    "en": "English"
   },
   "defaultLanguage": "de"
 }
