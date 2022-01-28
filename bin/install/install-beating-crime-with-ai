@@ -1,6 +1,6 @@
 #!/bin/bash
 
-COMMITISH="7f93d77ddc872cc3b44a7e684f9a318ec50ad488"
+COMMITISH="69ade4e4b012fc10a221c3fa76cb932a6333a929"
 REPO_URL="https://github.com/IMAGINARY/beating-crime-with-ai.git"
 INSTALL_DIR="/opt/beating-crime-with-ai"
 
