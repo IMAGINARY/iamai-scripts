@@ -1,6 +1,6 @@
 #!/bin/bash
 
-COMMITISH="v1.5.0"
+COMMITISH="v1.5.2"
 REPO_URL="https://github.com/IMAGINARY/gradient-descent"
 INSTALL_DIR="/opt/gradient-descent"
 CONFIG_FILE="${INSTALL_DIR}/config.iamai.local.json"
