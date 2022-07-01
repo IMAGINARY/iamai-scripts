@@ -15,6 +15,9 @@ cd /opt/ai-jam || exit
 ./RUN.sh &
 PIDS="$PIDS $!"
 
+# Wait a bit to work around a race condition in the MIDI clock allocation
+sleep 1
+
 function magenta_midi_ports_available() {
     local MAGENTA_MIDI_PORTS
     MAGENTA_MIDI_PORTS=$( ( aconnect -i && aconnect -o ) | grep magenta_ | sed "s/^[^']*'magenta_//g" | sed "s/[[:space:]']*'.*//g" | sort | uniq )

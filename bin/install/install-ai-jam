@@ -22,7 +22,7 @@ apt install -yq \
     '' # dummy entry to terminate the list
 
 # Install AI Jam sources
-COMMITISH="v1.1.1"
+COMMITISH="v1.1.2"
 REPO_URL="https://github.com/IMAGINARY/ai-jam.git"
 INSTALL_DIR="/opt/ai-jam"
 
