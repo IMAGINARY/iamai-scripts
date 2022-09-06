@@ -25,7 +25,6 @@ bootstrap() {
     apt install -yq --no-install-recommends \
         aconnectgui \
         barrier \
-        compton \
         curl \
         feh \
         git \
@@ -39,6 +38,7 @@ bootstrap() {
         openssh-server \
         overlayroot \
         pavucontrol \
+        picom \
         qjackctl \
         qsynth \
         ranger \
