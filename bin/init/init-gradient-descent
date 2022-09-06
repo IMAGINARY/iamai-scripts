@@ -4,4 +4,4 @@
 cd "$(dirname -- "$0")" || exit
 
 # rebind the joysticks to ensure correct mapping
-sudo ./gradient-descent/rebind-joysticks
+sudo --preserve-env=GRADIENT_DESCENT_JS0_USB_ID,GRADIENT_DESCENT_JS1_USB_ID ./gradient-descent/rebind-joysticks

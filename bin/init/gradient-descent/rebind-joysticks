@@ -1,8 +1,34 @@
 #!/usr/bin/bash
 
-# Change the IDs to match the USB port on your machine
-JS0_USB_ID=1-3:1.0
-JS1_USB_ID=1-4:1.0
+# Adjust the GRADIENT_DESCENT_JS0_USB_ID and GRADIENT_DESCENT_JS1_USB_ID
+# environment variables to match the USB port on your machine.
+
+# The USB bus IDs can be found using `readlink -f /sys/class/input/js*`
+# while the joysticks/gamepads are attached. The ID is the last path
+# segment that is also a node in `/sys/bus/usb/devices/`.
+
+echo "The following joysticks/gamepads are present in the system:"
+readlink -f /sys/class/input/js*
+echo
+
+JS0_USB_ID_DEFAULT=1-3:1.0
+JS1_USB_ID_DEFAULT=1-4:1.0
+
+JS0_USB_ID="${GRADIENT_DESCENT_JS0_USB_ID:-$JS0_USB_ID_DEFAULT}"
+JS1_USB_ID="${GRADIENT_DESCENT_JS1_USB_ID:-$JS1_USB_ID_DEFAULT}"
+
+if [[ -z "${GRADIENT_DESCENT_JS0_USB_ID}" ]]; then
+  echo "GRADIENT_DESCENT_JS0_USB_ID environment variable unset. Using default value: ${JS0_USB_ID}"
+else
+  echo "Using GRADIENT_DESCENT_JS0_USB_ID environment variable. Value: ${JS0_USB_ID}"
+fi
+
+if [[ -z "${GRADIENT_DESCENT_JS1_USB_ID}" ]]; then
+  echo "GRADIENT_DESCENT_JS1_USB_ID environment variable unset. Using default value: ${JS1_USB_ID}"
+else
+  echo "Using GRADIENT_DESCENT_JS1_USB_ID environment variable. Value: ${JS1_USB_ID}"
+fi
+
 
 echo "Unbinding all joysticks ..."
 find /sys/class/input/ -name 'js*' -print0 | while read -r -d '' js
