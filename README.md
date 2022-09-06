@@ -6,7 +6,7 @@ These scripts are used to install certain interactive stations in the I AM A.I. 
 
 ## Kiosk OS
 
-The target system for running the script is Ubuntu 20.04 provided that the following settings have been applied during installation:
+The target system for running the script is Ubuntu 22.04 provided that the following settings have been applied during installation:
 
 - Choose minimal installation
 - Install third-party software for graphics and WiFi hardware... : ON

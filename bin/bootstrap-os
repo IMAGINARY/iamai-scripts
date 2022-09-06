@@ -12,11 +12,6 @@ bootstrap() {
     # don't prompt during installations
     export DEBIAN_FRONTEND=noninteractive
 
-    # Add PPA for software not in the default Ubuntu repositories
-    #add-apt-repository -y ppa:jonathonf/barrier
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 8CF63AD3F06FC659
-    add-apt-repository "deb http://ppa.launchpad.net/jonathonf/barrier/ubuntu focal main"
-
     # Update the list of available packages
     apt update
 
