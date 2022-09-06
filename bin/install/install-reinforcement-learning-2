@@ -1,6 +1,6 @@
 #!/bin/bash
 
-COMMITISH="v1.0.0"
+COMMITISH="v1.2.0"
 REPO_URL="https://github.com/IMAGINARY/reinforcement-learning-2.git"
 INSTALL_DIR="/opt/reinforcement-learning-2"
 CONFIG_FILE="${INSTALL_DIR}/settings-exhibit.yml"
