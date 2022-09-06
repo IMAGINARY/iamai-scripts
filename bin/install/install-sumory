@@ -1,6 +1,6 @@
 #!/bin/bash
 
-COMMITISH="v1.1.1"
+COMMITISH="v1.2.2"
 REPO_URL="https://github.com/IMAGINARY/sumory.git"
 INSTALL_DIR="/opt/sumory"
 
