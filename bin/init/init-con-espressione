@@ -1,18 +1,35 @@
 #!/usr/bin/env bash
 
-# Sometimes the display names are DP[0-9], sometimes DP-[0-9]
-# First try DP[0-9]
-xrandr --output DP1 --primary --auto
-xrandr --output DP2 --auto --right-of DP1
-xinput map-to-output "$(xinput list --id-only 'Weida Hi-Tech                CoolTouchR System           ')" DP1
-xinput map-to-output "$(xinput list --id-only 'eGalax Inc. eGalaxTouch EXC3188-4426-08.00.00.00')" DP2
-xinput map-to-output "$(xinput list --id-only 'eGalax Inc. eGalaxTouch EXC3188-4633-09.00.00.00')" DP2
+APP_OUTPUT_DEFAULT=DP1
+MENU_OUTPUT_DEFAULT=DP2
+TOUCH_DEVICE_NAME_DEFAULT='eGalax Inc. eGalaxTouch EXC3188-4426-08.00.00.00'
 
-# Then DP-[0-9]
-xrandr --output DP-1 --primary --auto
-xrandr --output DP-2 --auto --right-of DP-1
-xinput map-to-output "$(xinput list --id-only 'Weida Hi-Tech                CoolTouchR System           ')" DP-1
-xinput map-to-output "$(xinput list --id-only 'eGalax Inc. eGalaxTouch EXC3188-4426-08.00.00.00')" DP-2
-xinput map-to-output "$(xinput list --id-only 'eGalax Inc. eGalaxTouch EXC3188-4633-09.00.00.00')" DP-2
+MENU_OUTPUT="${CON_ESPRESSIONE_MENU_OUTPUT:-$MENU_OUTPUT_DEFAULT}"
+APP_OUTPUT="${CON_ESPRESSIONE_APP_OUTPUT:-$APP_OUTPUT_DEFAULT}"
+TOUCH_DEVICE_NAME="${CON_ESPRESSIONE_TOUCH_DEVICE_NAME:-$TOUCH_DEVICE_NAME_DEFAULT}"
+
+
+if [[ -z "${CON_ESPRESSIONE_MENU_OUTPUT}" ]]; then
+  echo "CON_ESPRESSIONE_MENU_OUTPUT environment variable not set. Using default value: ${MENU_OUTPUT}"
+else
+  echo "Using CON_ESPRESSIONE_MENU_OUTPUT environment variable. Value: ${MENU_OUTPUT}"
+fi
+
+if [[ -z "${CON_ESPRESSIONE_APP_OUTPUT}" ]]; then
+  echo "CON_ESPRESSIONE_APP_OUTPUT environment variable not set. Using default value: ${APP_OUTPUT}"
+else
+  echo "Using CON_ESPRESSIONE_APP_OUTPUT environment variable. Value: ${APP_OUTPUT}"
+fi
+
+if [[ -z "${CON_ESPRESSIONE_TOUCH_DEVICE_NAME}" ]]; then
+  echo "CON_ESPRESSIONE_TOUCH_DEVICE_NAME environment variable not set. Using default value: ${TOUCH_DEVICE_NAME}"
+else
+  echo "Using CON_ESPRESSIONE_TOUCH_DEVICE_NAME environment variable. Value: ${TOUCH_DEVICE_NAME}"
+fi
+
+xrandr --output "$APP_OUTPUT" --primary --auto
+xrandr --output "$MENU_OUTPUT" --auto --right-of "$APP_OUTPUT"
+TOUCH_DEVICE_ID=$(xinput list --id-only "$TOUCH_DEVICE_NAME")
+xinput map-to-output "$TOUCH_DEVICE_ID" "$MENU_OUTPUT"
 
 exit 0
