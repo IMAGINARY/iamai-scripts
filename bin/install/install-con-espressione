@@ -47,7 +47,7 @@ else
       libgl1-mesa-glx \
       '' # dummy entry to terminate the list
     TEMP_DIR="$(mktemp -d)"
-    cd "$TEMP_DIR"
+    cd "$TEMP_DIR" || exit 1
     curl -L https://warehouse.leapmotion.com/apps/4186/download \
         | tar xvz Leap_Motion_Installer_Packages_release_public_linux/Leap-2.3.1+31549-x64.deb
     dpkg -i Leap_Motion_Installer_Packages_release_public_linux/Leap-2.3.1+31549-x64.deb
@@ -95,7 +95,7 @@ BACKEND_COMMITISH="ea623b4663cc739e017afb3e1e7322851ea01672"
 BACKEND_INSTALL_DIR="/opt/con-espressione/backend"
 mkdir -p "$BACKEND_INSTALL_DIR"
 
-cd "$BACKEND_INSTALL_DIR"
+cd "$BACKEND_INSTALL_DIR" || exit 1
 git init
 git remote remove origin &> /dev/null || true
 git remote add origin https://github.com/IMAGINARY/con-espressione.git
@@ -104,7 +104,7 @@ git reset --hard origin/master
 git checkout "$BACKEND_COMMITISH"
 
 BACKEND_ENV_DIR="/opt/con-espressione/conda-environment"
-if !("$CONDA" env list | grep "[[:space:]]$BACKEND_ENV_DIR\$" > /dev/null )
+if ! ( "$CONDA" env list | grep "[[:space:]]$BACKEND_ENV_DIR\$" > /dev/null )
 then
     echo "Creating conda environment"
     "$CONDA" env create -f="$BACKEND_INSTALL_DIR/environment.yml" -p "$BACKEND_ENV_DIR"
@@ -124,7 +124,7 @@ FRONTEND_COMMITISH="v1.0"
 FRONTEND_INSTALL_DIR="/opt/con-espressione/frontend"
 mkdir -p "$FRONTEND_INSTALL_DIR"
 
-cd "$FRONTEND_INSTALL_DIR"
+cd "$FRONTEND_INSTALL_DIR" || exit 1
 git init
 git remote remove origin &> /dev/null || true
 git remote add origin https://github.com/IMAGINARY/con-espressione-ui.git

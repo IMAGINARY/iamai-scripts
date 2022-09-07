@@ -10,14 +10,14 @@ function finish {
 trap finish SIGINT SIGTERM EXIT
 
 # Launch the expressivness python backend
-cd /opt/con-espressione/backend
+cd /opt/con-espressione/backend || exit 1
 source /opt/con-espressione/miniconda3/bin/activate /opt/con-espressione/conda-environment/
 python con_espressione.py &
 PIDS="$PIDS $!"
 
 # Wait for the MIDI output
 echo -n 'Waiting for con-espressione MIDI output';
-until (aconnect -o | grep 'con-espressione' 2>&1 > /dev/null); do
+until (aconnect -o | grep 'con-espressione'  >/dev/null 2>&1); do
     echo -n .
     sleep 1s &
     PID_SLEEP=$!
