@@ -55,15 +55,8 @@ kiosk-browser $KIOSK_OPTS --kiosk --fullscreen --cover-displays 0 --serve /opt/c
 PID_UI=$!
 PIDS="$PIDS $PID_UI"
 
-while [ -z $UI_PORT ]
-do
-    sleep 1s
-    UI_PORT=$(lsof -p "$PID_UI" | grep "TCP localhost:[0-9]* (LISTEN)" | sed 's/.* TCP localhost:\([0-9]*\) .*/\1/')
-done
-echo "UI is being served via http://localhost:$UI_PORT"
-
 # Launch menu on secondary display
-kiosk-browser $KIOSK_OPTS --kiosk --fullscreen --cover-displays 1 http://localhost:$UI_PORT/menu/applauncher2/index.html?cfg=con-espressione &
+kiosk-browser $KIOSK_OPTS --kiosk --fullscreen --cover-displays 1 --serve /opt/con-espressione/frontend menu/applauncher2/index.html?cfg=con-espressione &
 PID_MENU=$!
 PIDS="$PIDS $PID_MENU"
 
