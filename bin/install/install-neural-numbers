@@ -15,7 +15,8 @@ CONFIG_FILE="${INSTALL_DIR}/config.iamai.local.json"
   "lastTrainStepTimeout": 1.5,
   "languages": {
     "de": "Deutsch",
-    "en": "English"
+    "en": "English",
+    "nl": "Nederlands"
   },
   "defaultLanguage": "de"
 }
