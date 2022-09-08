@@ -18,6 +18,7 @@ apt install -yq \
     libjack-jackd2-dev \
     pkg-config \
     python2-dev \
+    python2-pip-whl \
     virtualenv \
     '' # dummy entry to terminate the list
 
@@ -34,7 +35,7 @@ cd "$INSTALL_DIR"
 IPADDRESS_WHEEL_URL="https://files.pythonhosted.org/packages/c2/f8/49697181b1651d8347d24c095ce46c7346c37335ddc7d255833e7cde674d/ipaddress-1.0.23-py2.py3-none-any.whl"
 WHEEL_DIR="/usr/share/python-wheels"
 ( cd "$WHEEL_DIR" && curl -O "$IPADDRESS_WHEEL_URL" )
-virtualenv --python=$(which python2.7) --no-setuptools env
+virtualenv --python="$(which python2.7)" --no-setuptools env
 
 # Install python packages in virtual environment
 . ./env/bin/activate
@@ -93,7 +94,6 @@ virtualenv --python=$(which python2.7) --no-setuptools env
     pexpect==4.8.0 \
     pickleshare==0.7.5 \
     Pillow==6.2.2 \
-    pkg-resources==0.0.0 \
     pretty-midi==0.2.8 \
     progress==1.5 \
     prompt-toolkit==1.0.18 \
