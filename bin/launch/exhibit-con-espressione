@@ -1,5 +1,5 @@
 #!/bin/bash -l
-# This script is supposed to run AI Jam exhibit.
+# This script is supposed to run the Con-Espressione! exhibit.
 # The wrapper script is supposed to be visible in ps -a resp. ps -u `id -u` to make
 # it easy to kill it (by a script or manually)
 

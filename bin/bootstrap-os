@@ -69,6 +69,8 @@ bootstrap() {
     # Install the exhibits
     install-ai-jam
     install-beating-crime-with-ai
+    install-con-espressione
+    install-con-espressione-fluid-viz-midi
     install-ethics-vehicles
     install-gradient-descent
     install-neural-numbers

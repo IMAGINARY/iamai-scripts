@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+APP_OUTPUT_DEFAULT=DP1
+MENU_OUTPUT_DEFAULT=DP2
+MIDI_VIZ_OUTPUT_DEFAULT=DP3
+TOUCH_DEVICE_NAME_DEFAULT='eGalax Inc. eGalaxTouch EXC3188-4426-08.00.00.00'
+
+MENU_OUTPUT="${CON_ESPRESSIONE_MENU_OUTPUT:-$MENU_OUTPUT_DEFAULT}"
+APP_OUTPUT="${CON_ESPRESSIONE_APP_OUTPUT:-$APP_OUTPUT_DEFAULT}"
+MIDI_VIZ_OUTPUT="${CON_ESPRESSIONE_MIDI_VIZ_OUTPUT:-$MIDI_VIZ_OUTPUT_DEFAULT}"
+TOUCH_DEVICE_NAME="${CON_ESPRESSIONE_TOUCH_DEVICE_NAME:-$TOUCH_DEVICE_NAME_DEFAULT}"
+
+
+if [[ -z "${CON_ESPRESSIONE_MENU_OUTPUT}" ]]; then
+  echo "CON_ESPRESSIONE_MENU_OUTPUT environment variable not set. Using default value: ${MENU_OUTPUT}"
+else
+  echo "Using CON_ESPRESSIONE_MENU_OUTPUT environment variable. Value: ${MENU_OUTPUT}"
+fi
+
+if [[ -z "${CON_ESPRESSIONE_APP_OUTPUT}" ]]; then
+  echo "CON_ESPRESSIONE_APP_OUTPUT environment variable not set. Using default value: ${APP_OUTPUT}"
+else
+  echo "Using CON_ESPRESSIONE_APP_OUTPUT environment variable. Value: ${APP_OUTPUT}"
+fi
+
+if [[ -z "${CON_ESPRESSIONE_MIDI_VIZ_OUTPUT}" ]]; then
+  echo "CON_ESPRESSIONE_MIDI_VIZ_OUTPUT environment variable not set. Using default value: ${MIDI_VIZ_OUTPUT}"
+else
+  echo "Using CON_ESPRESSIONE_MIDI_VIZ_OUTPUT environment variable. Value: ${MIDI_VIZ_OUTPUT}"
+fi
+
+if [[ -z "${CON_ESPRESSIONE_TOUCH_DEVICE_NAME}" ]]; then
+  echo "CON_ESPRESSIONE_TOUCH_DEVICE_NAME environment variable not set. Using default value: ${TOUCH_DEVICE_NAME}"
+else
+  echo "Using CON_ESPRESSIONE_TOUCH_DEVICE_NAME environment variable. Value: ${TOUCH_DEVICE_NAME}"
+fi
+
+xrandr --output "$APP_OUTPUT" --primary --auto
+xrandr --output "$MENU_OUTPUT" --auto --right-of "$APP_OUTPUT"
+xrandr --output "$MIDI_VIZ_OUTPUT" --auto --right-of "$MIDI_VIZ_OUTPUT"
+TOUCH_DEVICE_ID=$(xinput list --id-only "$TOUCH_DEVICE_NAME")
+xinput map-to-output "$TOUCH_DEVICE_ID" "$MENU_OUTPUT"
+
+exit 0

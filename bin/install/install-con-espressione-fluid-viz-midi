@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+if [ "$UID" -ne 0 ]
+then
+    >&2 echo "This script requires superuser priviledges."
+    exit 1
+fi
+
+COMMITISH="360daec890dc067db059272b1a7db49c021c584b"
+REPO_URL="https://github.com/IMAGINARY/fluid-viz-midi"
+INSTALL_DIR="/opt/con-espressione/fluid-viz-midi"
+
+"${BASH_SOURCE%/*}/../internal/install-source-from-git" "$COMMITISH" "$REPO_URL" "$INSTALL_DIR"
+
+exit $?

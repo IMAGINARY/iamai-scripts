@@ -1,0 +1,31 @@
+#!/bin/bash -l
+# This script is supposed to run the Con-Espressione! exhibit
+# with MIDI visualization.
+# The wrapper script is supposed to be visible in ps -a resp. ps -u `id -u` to make
+# it easy to kill it (by a script or manually)
+
+PIDS=""
+function finish {
+    kill $PIDS >/dev/null 2>&1
+}
+trap finish SIGINT SIGTERM EXIT
+
+# Launch the Con-Espressione! exhibit on the primary and secondary display
+exhibit-con-espressione &
+PID_CON_EPSRESSIONE=$!
+PIDS="$PIDS $PID_CON_EPSRESSIONE"
+
+# Launch the MIDI visualization on the ternary display
+kiosk-browser \
+  $KIOSK_OPTS \
+  --kiosk \
+  --fullscreen \
+  --cover-displays 2 \
+  --serve /opt/con-espressione/fluid-viz-midi \
+  'index.html?midiPortName=con-espressione&midiChannelMask=0000000000000001&midiVelocityFactor=1.5&midiVelocityOffset=20' \
+  &
+PID_MIDI_VIZ=$!
+PIDS="$PIDS $PID_MIDI_VIZ"
+
+# Wait for the exhibit to finish or until the signal trap is triggered
+wait -n $PIDS

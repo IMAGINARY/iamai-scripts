@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+if [ "$UID" -ne 0 ]
+then
+    >&2 echo "This script requires superuser priviledges."
+    exit 1
+fi
+
+################################################################################
+# Install launch script dependencies
+################################################################################
+apt install -yq \
+    xdotool \
+    '' # dummy entry to terminate the list
+
+################################################################################
+# Install Con-Espressione!
+################################################################################
+install-con-espressione
+
+################################################################################
+# Install MIDI fluid simulation
+################################################################################
+install-con-espressione-fluid-viz-midi
+
+exit $?
