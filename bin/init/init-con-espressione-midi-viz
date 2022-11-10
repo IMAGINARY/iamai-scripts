@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
-APP_OUTPUT_DEFAULT=DP1
-MENU_OUTPUT_DEFAULT=DP2
-MIDI_VIZ_OUTPUT_DEFAULT=DP3
-TOUCH_DEVICE_NAME_DEFAULT='eGalax Inc. eGalaxTouch EXC3188-4426-08.00.00.00'
+OUTPUTS=$(xrandr | grep " connected " | sed 's/ .*$//')
+
+APP_OUTPUT_DEFAULT=$(echo "$OUTPUTS" | sed "1q;d")
+MENU_OUTPUT_DEFAULT=$(echo "$OUTPUTS" | sed "2q;d")
+MIDI_VIZ_OUTPUT_DEFAULT=$(echo "$OUTPUTS" | sed "3q;d")
+TOUCH_DEVICE_NAME_DEFAULT=$(udevadm info --export-db | awk '/ID_INPUT_TOUCHSCREEN=1/' RS= | grep "^E: NAME=" | cut -d '"' -f2 | head -n 1)
 
 MENU_OUTPUT="${CON_ESPRESSIONE_MENU_OUTPUT:-$MENU_OUTPUT_DEFAULT}"
 APP_OUTPUT="${CON_ESPRESSIONE_APP_OUTPUT:-$APP_OUTPUT_DEFAULT}"
