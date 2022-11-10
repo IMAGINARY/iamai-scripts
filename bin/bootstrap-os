@@ -70,7 +70,7 @@ bootstrap() {
     install-ai-jam
     install-beating-crime-with-ai
     install-con-espressione
-    install-con-espressione-fluid-viz-midi
+    install-con-espressione-midi-viz
     install-ethics-vehicles
     install-gradient-descent
     install-neural-numbers
