@@ -118,7 +118,7 @@ fi
 ################################################################################
 
 # Target versions
-FRONTEND_COMMITISH="v1.0"
+FRONTEND_COMMITISH="v1.1.0"
 
 # Make sure the folder exists
 FRONTEND_INSTALL_DIR="/opt/con-espressione/frontend"
