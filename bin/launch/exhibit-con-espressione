@@ -70,6 +70,9 @@ kiosk-browser $KIOSK_OPTS --kiosk --fullscreen --cover-displays 0 --serve /opt/c
 PID_UI=$!
 PIDS="$PIDS $PID_UI"
 
+# Let the first kiosk-browser start up properly to avoid race conditions when creating cache files.
+sleep 1
+
 # Launch menu on secondary display
 kiosk-browser $KIOSK_OPTS --kiosk --fullscreen --cover-displays 1 --serve /opt/con-espressione/frontend menu/applauncher2/index.html?cfg=con-espressione &
 PID_MENU=$!
