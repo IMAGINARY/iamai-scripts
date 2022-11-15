@@ -67,28 +67,39 @@ fi
 ML_IMPACT_MIDI_INPUT_URL_ENCODED="$(python3 -c 'import urllib.parse;print(urllib.parse.quote(input()))' <<< "${ML_IMPACT_MIDI_INPUT}")"
 
 DEBUG_TOOLS="false"
-kiosk-browser $KIOSK_OPTS --kiosk --fullscreen --cover-displays 0 --serve /opt/con-espressione/frontend src/index.html?mlImpactMidiInput=$ML_IMPACT_MIDI_INPUT_URL_ENCODED\&showDebugTools=$DEBUG_TOOLS\&enableSynth=$INTERNAL_SYNTH &
+kiosk-browser \
+  $KIOSK_OPTS \
+  --app-name-suffix=con-espressione-frontend \
+  --kiosk \
+  --fullscreen \
+  --cover-displays=0 \
+  --serve=/opt/con-espressione/frontend \
+  src/index.html?mlImpactMidiInput=$ML_IMPACT_MIDI_INPUT_URL_ENCODED\&showDebugTools=$DEBUG_TOOLS\&enableSynth=$INTERNAL_SYNTH \
+&
 PID_UI=$!
 PIDS="$PIDS $PID_UI"
 
-# Let the first kiosk-browser start up properly to avoid race conditions when creating cache files.
-sleep 1
-
 # Launch menu on secondary display
-kiosk-browser $KIOSK_OPTS --kiosk --fullscreen --cover-displays 1 --serve /opt/con-espressione/frontend menu/applauncher2/index.html?cfg=con-espressione &
+kiosk-browser \
+  $KIOSK_OPTS \
+  --app-name-suffix=con-espressione-menu \
+  --kiosk \
+  --fullscreen \
+  --cover-displays=1 \
+  --serve=/opt/con-espressione/frontend \
+  menu/applauncher2/index.html?cfg=con-espressione \
+  &
 PID_MENU=$!
 PIDS="$PIDS $PID_MENU"
-
-# Let the first and second kiosk-browser start up properly to avoid race conditions when creating cache files.
-sleep 1
 
 # Launch the MIDI visualization on the ternary display
 kiosk-browser \
   $KIOSK_OPTS \
+  --app-name-suffix=con-espressione-fluid-viz-midi \
   --kiosk \
   --fullscreen \
-  --cover-displays 2 \
-  --serve /opt/con-espressione/fluid-viz-midi \
+  --cover-displays=2 \
+  --serve=/opt/con-espressione/fluid-viz-midi \
   'index.html?midiPortName=con-espressione&midiChannelMask=0000000000000001&midiVelocityFactor=1.5&midiVelocityOffset=20' \
   &
 PID_MIDI_VIZ=$!
