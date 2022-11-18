@@ -6,7 +6,7 @@ then
     exit 1
 fi
 
-COMMITISH="360daec890dc067db059272b1a7db49c021c584b"
+COMMITISH="5a9859e0247f2b3cbb34a837148ea9257cff63ea"
 REPO_URL="https://github.com/IMAGINARY/fluid-viz-midi"
 INSTALL_DIR="/opt/con-espressione/fluid-viz-midi"
 
