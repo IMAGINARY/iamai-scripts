@@ -1,17 +1,14 @@
 #!/usr/bin/env bash
 
-# For some yet unknown reason, PulseAudio does not play audio when applications
-# are launched too early during the startup process. It also seems to happen
-# only for some sound cards, not all (e.g. it failed with the built-in card).
-# Suspending PulseAudio and unsuspending it after some delay seems to work 
-# around the issue. However the workaround includes a race condition, because
-# there is no way to tell how long the delay actually needds to be to work in
-# all cases. I went with twice the minimum delay that worked, just to be more
-# on the safe side ¯\_(ツ)_/¯.
-# At some point, this question may be answered here:
-# https://answers.launchpad.net/ubuntu/+question/703840
-PA_UNSUSPEND_DELAY=5
-(pacmd suspend true; sleep "$PA_UNSUSPEND_DELAY"; pacmd suspend false) &
+# For some yet unknown reason, PulseAudio or ALSA do not play audio when 
+# applications are launched too early during the startup process. It also seems # to happen only for some sound cards, not all. (e.g. it failed with the
+# built-in card).
+# Muting, Unmuting and modifying the Master audio control seems to make it
+# work reliably, hopefully ¯\_(ツ)_/¯.
+#
+# Forum post: https://answers.launchpad.net/ubuntu/+question/703840
+# Bug report: https://bugs.launchpad.net/bugs/1997224
+amixer sset Master mute unmute 1- 1+
 
 OUTPUTS=$(xrandr | grep " connected " | sed 's/ .*$//')
 
