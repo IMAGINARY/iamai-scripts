@@ -79,26 +79,26 @@ kiosk-browser \
 PID_UI=$!
 PIDS="$PIDS $PID_UI"
 
-# Launch menu on secondary display
+# Launch menu on ternary display
 kiosk-browser \
   $KIOSK_OPTS \
   --app-name-suffix=con-espressione-menu \
   --kiosk \
   --fullscreen \
-  --cover-displays=1 \
+  --cover-displays=2 \
   --serve=/opt/con-espressione/frontend \
   menu/applauncher2/index.html?cfg=con-espressione \
   &
 PID_MENU=$!
 PIDS="$PIDS $PID_MENU"
 
-# Launch the MIDI visualization on the ternary display
+# Launch the MIDI visualization on the secondary display
 kiosk-browser \
   $KIOSK_OPTS \
   --app-name-suffix=con-espressione-fluid-viz-midi \
   --kiosk \
   --fullscreen \
-  --cover-displays=2 \
+  --cover-displays=1 \
   --serve=/opt/con-espressione/fluid-viz-midi \
   'index.html?midiPortName=con-espressione&midiChannelMask=0000000000000001&midiVelocityFactor=1.5&midiVelocityOffset=20' \
   &

@@ -13,8 +13,8 @@ amixer sset Master mute unmute 1- 1+
 OUTPUTS=$(xrandr | grep " connected " | sed 's/ .*$//')
 
 APP_OUTPUT_DEFAULT=$(echo "$OUTPUTS" | sed "1q;d")
-MENU_OUTPUT_DEFAULT=$(echo "$OUTPUTS" | sed "2q;d")
-MIDI_VIZ_OUTPUT_DEFAULT=$(echo "$OUTPUTS" | sed "3q;d")
+MIDI_VIZ_OUTPUT_DEFAULT=$(echo "$OUTPUTS" | sed "2q;d")
+MENU_OUTPUT_DEFAULT=$(echo "$OUTPUTS" | sed "3q;d")
 TOUCH_DEVICE_NAME_DEFAULT=$(udevadm info --export-db | awk '/ID_INPUT_TOUCHSCREEN=1/' RS= | grep "^E: NAME=" | cut -d '"' -f2 | head -n 1)
 
 MENU_OUTPUT="${CON_ESPRESSIONE_MENU_OUTPUT:-$MENU_OUTPUT_DEFAULT}"
@@ -47,9 +47,9 @@ else
   echo "Using CON_ESPRESSIONE_TOUCH_DEVICE_NAME environment variable. Value: ${TOUCH_DEVICE_NAME}"
 fi
 
-xrandr --output "$APP_OUTPUT" --primary --auto
-xrandr --output "$MENU_OUTPUT" --auto --right-of "$APP_OUTPUT"
-xrandr --output "$MIDI_VIZ_OUTPUT" --auto --right-of "$MIDI_VIZ_OUTPUT"
+xrandr --output "$APP_OUTPUT" --primary --preferred
+xrandr --output "$MIDI_VIZ_OUTPUT" --preferred --right-of "$APP_OUTPUT"
+xrandr --output "$MENU_OUTPUT" --preferred --right-of "$MIDI_VIZ_OUTPUT"
 TOUCH_DEVICE_ID=$(xinput list --id-only "$TOUCH_DEVICE_NAME")
 xinput map-to-output "$TOUCH_DEVICE_ID" "$MENU_OUTPUT"
 
