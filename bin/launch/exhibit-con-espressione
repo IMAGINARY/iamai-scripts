@@ -12,12 +12,20 @@ trap finish SIGINT SIGTERM EXIT
 # Configuration
 ML_IMPACT_MIDI_INPUT_DEFAULT="SOLO Control"
 ML_IMPACT_MIDI_INPUT="${CON_ESPRESSIONE_ML_IMPACT_MIDI_INPUT:-$ML_IMPACT_MIDI_INPUT_DEFAULT}"
+DARK_MODE_DEFAULT="false"
+DARK_MODE="${CON_ESPRESSIONE_DARK_MODE:-$DARK_MODE_DEFAULT}"
 
 
 if [[ -z "${CON_ESPRESSIONE_ML_IMPACT_MIDI_INPUT}" ]]; then
   echo "CON_ESPRESSIONE_ML_IMPACT_MIDI_INPUT environment variable not set. Using default value: ${ML_IMPACT_MIDI_INPUT}"
 else
   echo "Using CON_ESPRESSIONE_ML_IMPACT_MIDI_INPUT environment variable. Value: ${ML_IMPACT_MIDI_INPUT}"
+fi
+
+if [[ -z "${CON_ESPRESSIONE_DARK_MODE}" ]]; then
+  echo "CON_ESPRESSIONE_DARK_MODE environment variable not set. Using default value: ${DARK_MODE}"
+else
+  echo "Using CON_ESPRESSIONE_DARK_MODE environment variable. Value: ${DARK_MODE}"
 fi
 
 
@@ -73,7 +81,7 @@ kiosk-browser \
   --fullscreen \
   --cover-displays=0 \
   --serve=/opt/con-espressione/frontend \
-  src/index.html?mlImpactMidiInput=$ML_IMPACT_MIDI_INPUT_URL_ENCODED\&showDebugTools=$DEBUG_TOOLS\&enableSynth=$INTERNAL_SYNTH \
+  "src/index.html?darkMode=$DARK_MODE&mlImpactMidiInput=$ML_IMPACT_MIDI_INPUT_URL_ENCODED\&showDebugTools=$DEBUG_TOOLS\&enableSynth=$INTERNAL_SYNTH" \
 &
 PID_UI=$!
 PIDS="$PIDS $PID_UI"
