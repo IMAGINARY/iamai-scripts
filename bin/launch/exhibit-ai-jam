@@ -45,6 +45,7 @@ kiosk-browser $KIOSK_OPTS \
     --hide-scrollbars \
     --reload-idle "$(( 3 * 60 ))" \
     --reload-unresponsive 60 \
+    --append-chrome-switch=--audio-buffer-size=128 \
     --serve /opt/ai-jam/public \
     index.html &
 PID_UI=$!
