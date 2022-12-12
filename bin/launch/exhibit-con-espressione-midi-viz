@@ -82,7 +82,7 @@ kiosk-browser \
   --fullscreen \
   --cover-displays=0 \
   --serve=/opt/con-espressione/frontend \
-  "src/index.html?darkMode=$DARK_MODE&mlImpactMidiInput=$ML_IMPACT_MIDI_INPUT_URL_ENCODED\&showDebugTools=$DEBUG_TOOLS\&enableSynth=$INTERNAL_SYNTH" \
+  "src/index.html?darkMode=$DARK_MODE&mlImpactMidiInput=$ML_IMPACT_MIDI_INPUT_URL_ENCODED&showDebugTools=$DEBUG_TOOLS&enableSynth=$INTERNAL_SYNTH" \
 &
 PID_UI=$!
 PIDS="$PIDS $PID_UI"
