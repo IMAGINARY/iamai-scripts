@@ -15,6 +15,8 @@ ML_IMPACT_MIDI_INPUT_DEFAULT="SOLO Control"
 ML_IMPACT_MIDI_INPUT="${CON_ESPRESSIONE_ML_IMPACT_MIDI_INPUT:-$ML_IMPACT_MIDI_INPUT_DEFAULT}"
 DARK_MODE_DEFAULT="false"
 DARK_MODE="${CON_ESPRESSIONE_DARK_MODE:-$DARK_MODE_DEFAULT}"
+SYNTH_DEFAULT=("fluidsynth" "--disable-lash" "--server" "--no-shell" "--gain" "1" "-o" "midi.autoconnect=True" "/opt/con-espressione/soundfonts/Nice-Steinway-v3.9.sf2")
+SYNTH=("${CON_ESPRESSIONE_SYNTH[@]:-${SYNTH_DEFAULT[@]}}")
 
 
 if [[ -z "${CON_ESPRESSIONE_ML_IMPACT_MIDI_INPUT}" ]]; then
@@ -27,6 +29,12 @@ if [[ -z "${CON_ESPRESSIONE_DARK_MODE}" ]]; then
   echo "CON_ESPRESSIONE_DARK_MODE environment variable not set. Using default value: ${DARK_MODE}"
 else
   echo "Using CON_ESPRESSIONE_DARK_MODE environment variable. Value: ${DARK_MODE}"
+fi
+
+if [[ -z "${CON_ESPRESSIONE_SYNTH}" ]]; then
+  echo "CON_ESPRESSIONE_SYNTH environment variable not set. Using default value: ${SYNTH[*]}"
+else
+  echo "Using CON_ESPRESSIONE_SYNTH environment variable. Value: ${SYNTH[*]}"
 fi
 
 
@@ -47,28 +55,9 @@ done
 echo ' Done.'
 
 # Launch the Pianoteq synthesizer if available
-PIANOTEQ_SYNTH="/opt/con-espressione/Pianoteq 6 STAGE/amd64/Pianoteq 6 STAGE"
-if command -v "$PIANOTEQ_SYNTH" > /dev/null; then
-    echo "Using Pianoteq 6 synthesizer"
-
-    sleep 1s &
-    PID_SLEEP=$!
-    PIDS="$PIDS $PID_SLEEP"
-    wait $PID_SLEEP
-
-    "$PIANOTEQ_SYNTH" &
-    PIANOTEQ_SYNTH_PID=$!
-    PIDS="$PIDS $PIANOTEQ_SYNTH_PID"
-    INTERNAL_SYNTH="false"
-
-    xdotool search --sync --all --pid="$PIANOTEQ_SYNTH_PID" --onlyvisible --class '.*' windowminimize > /dev/null &
-    PID_XDOTOOL=$!
-    PIDS="$PIDS $PID_XDOTOOL"
-    wait $PID_XDOTOOL
-else
-    echo "Using internal synthesizer"
-    INTERNAL_SYNTH="true"
-fi
+"${SYNTH[@]}" &
+PID_SYNTH=$!
+PIDS="$PIDS $PID_SYNTH"
 
 # Launch the main UI on the primary display and send the process to the background
 
@@ -82,7 +71,7 @@ kiosk-browser \
   --fullscreen \
   --cover-displays=0 \
   --serve=/opt/con-espressione/frontend \
-  "src/index.html?darkMode=$DARK_MODE&mlImpactMidiInput=$ML_IMPACT_MIDI_INPUT_URL_ENCODED&showDebugTools=$DEBUG_TOOLS&enableSynth=$INTERNAL_SYNTH" \
+  "src/index.html?darkMode=$DARK_MODE&mlImpactMidiInput=$ML_IMPACT_MIDI_INPUT_URL_ENCODED&showDebugTools=$DEBUG_TOOLS&enableSynth=false" \
 &
 PID_UI=$!
 PIDS="$PIDS $PID_UI"

@@ -13,6 +13,14 @@ apt install -yq \
     xdotool \
     '' # dummy entry to terminate the list
 
+# FluidSynth 2.2.7 resolves a bug that causes SIGTERM and SIGINT to be ignored.
+# Since FluidSynth 2.2.7 was not available for Ubuntu 22.04 at the time of
+# writing, we install the package from a PPA.
+# See https://github.com/FluidSynth/fluidsynth/issues/1071 for a bug report.
+add-apt-repository --yes ppa:savoury1/multimedia
+apt satisfy -yq "fluidsynth (>=2.2.7)"
+add-apt-repository --yes --remove ppa:savoury1/multimedia
+
 ################################################################################
 # Install Miniconda3
 ################################################################################
@@ -135,8 +143,63 @@ git checkout "$FRONTEND_COMMITISH"
 ./menu/install.sh
 
 ################################################################################
-# Install Pianoteq synthesizer
+# Download soundfont for FluidSynth
 ################################################################################
+
+SOUNDFONTS_DIR="/opt/con-espressione/soundfonts"
+mkdir -p "$SOUNDFONTS_DIR"
+
+# The soundfont file is a copy of the classic Steinway Grand piano avaible at
+# https://sites.google.com/site/soundfonts4u/home
+SOUNDFONT_URL="https://imaginaryexhibits.s3.eu-central-1.amazonaws.com/con-espressione/soundfonts/Nice-Steinway-v3.9.sf2"
+SOUNDFONT_SHA256SUM="3ddb604b59178fa83eda353c287016356ed720de1ce79da3b9de3c612a5b9450"
+SOUNDFONT_BASENAME="$(basename "$SOUNDFONT_URL")"
+SOUNDFONT_TARGET="$SOUNDFONTS_DIR/$SOUNDFONT_BASENAME"
+
+(echo "$SOUNDFONT_SHA256SUM $SOUNDFONT_TARGET" | sha256sum --check) \
+  || wget -O "$SOUNDFONT_TARGET" "$SOUNDFONT_URL"
+
+################################################################################
+# Prepare a launch script for the optional Pianoteq virtual piano
+################################################################################
+
+PIANOTEQ_SYNTH_LAUNCH_SCRIPT="/opt/con-espressione/pianoteq"
+cat >"${PIANOTEQ_SYNTH_LAUNCH_SCRIPT}" <<EOL
+#!/bin/bash -l
+PIDS=""
+function finish {
+    kill \$PIDS >/dev/null 2>&1
+}
+trap finish SIGINT SIGTERM EXIT
+
+PIANOTEQ_SYNTH_DEFAULT=('/opt/con-espressione/Pianoteq 6 STAGE/amd64/Pianoteq 6 STAGE')
+PIANOTEQ_SYNTH=("\${CON_ESPRESSIONE_PIANOTEQ_SYNTH_DEFAULT[@]:-\${PIANOTEQ_SYNTH_DEFAULT[@]}}")
+
+
+if [[ -z "\${CON_ESPRESSIONE_PIANOTEQ_SYNTH}" ]]; then
+  echo "CON_ESPRESSIONE_PIANOTEQ_SYNTH environment variable not set. Using default value: \${PIANOTEQ_SYNTH[*]}"
+else
+  echo "Using CON_ESPRESSIONE_PIANOTEQ_SYNTH environment variable. Value: \${PIANOTEQ_SYNTH[*]}"
+fi
+
+
+sleep 1s &
+PID_SLEEP=\$!
+PIDS="\$PIDS \$PID_SLEEP"
+wait \$PID_SLEEP
+
+"\${PIANOTEQ_SYNTH[@]}" &
+PIANOTEQ_SYNTH_PID=\$!
+PIDS="\$PIDS \$PIANOTEQ_SYNTH_PID"
+
+xdotool search --sync --all --pid="\$PIANOTEQ_SYNTH_PID" --onlyvisible --class '.*' windowminimize > /dev/null &
+PID_XDOTOOL=\$!
+PIDS="\$PIDS \$PID_XDOTOOL"
+wait \$PID_XDOTOOL
+
+wait "\$PIANOTEQ_SYNTH_PID"
+EOL
+chmod +x "$PIANOTEQ_SYNTH_LAUNCH_SCRIPT"
 
 # Not implemented due to license restrictions
 echo Consider installing Pianoteq 6 synthesizer
