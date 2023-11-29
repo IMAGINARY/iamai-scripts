@@ -25,6 +25,27 @@ ensure_root_privileges() {
     fi
 }
 
+get_script_dirname() {
+    local SOURCE DIR
+    SOURCE=${BASH_SOURCE[0]}
+    while [ -L "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+        DIR=$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )
+        SOURCE=$(readlink "$SOURCE")
+        [[ $SOURCE != /* ]] && SOURCE=$DIR/$SOURCE # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+    done
+    DIR=$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )
+    echo "$DIR"
+}
+
+do_get_git_rev() {
+    local REV
+    REV=$(git -C "$(get_script_dirname)" rev-parse --short HEAD)
+    if [[ $(git -C "$(get_script_dirname)" status --porcelain) ]]; then
+        REV+="-dirty"
+    fi
+    echo "$REV"
+}
+
 calc_wt_size() {
   # NOTE: it's tempting to redirect stderr to /dev/null, so supress error 
   # output from tput. However in this case, tput detects neither stdout or 
@@ -348,6 +369,96 @@ do_hidecursor_menu() {
     esac || "$DIALOG" --msgbox "Error applying cursor hiding setting" 0 0
 }
 
+
+do_select_screen_layout_initializer() {
+    local MSG_TEXT
+    MSG_TEXT=""
+    MSG_TEXT+="Select the screen layout script to apply automatically\n"
+    MSG_TEXT+="\n"
+    MSG_TEXT+="Current screen layout script: \"$INIT_SCREEN_LAYOUT\""
+    do_select_file \
+        "ARandR .screenlayout script selection" \
+        "Select the screen layout script to apply automatically" \
+        "No screen layout scripts found in \$HOME/.screenlayout." \
+        "$HOME/.screenlayout" -perm -u=x -type f -name \*
+}
+
+do_custom_screen_layout_initializer() {
+    "$DIALOG" --title "Custom screen layout command" \
+        --inputbox "Enter a command" 0 $D_WIDTH "" \
+        --cancel-button Back \
+        3>&1 1>&2 2>&3
+}
+
+do_screen_layout_menu() {
+    while true; do
+        local FUN RET MENU_TEXT
+        reload_config_file
+        MENU_TEXT="Set system-wide default screen layout initializer. The screen layout initializer will run once before launching the exhibit initilizer.\n"
+        MENU_TEXT+="\n"
+        MENU_TEXT+="Current screen layout script: \"$INIT_SCREEN_LAYOUT\"\n"
+        FUN=$("$DIALOG" --title "Exhibit selection" \
+            --menu "$MENU_TEXT" 0 0 0 \
+            --cancel-button Back \
+            --ok-button Select \
+            "1 Launch ARandR" "Launch the ARandR screen setup tool (you need to save your configuration before exiting)" \
+            "2 Select ARandR .screenlayout script" "Select one of the scripts in ~/.screenlayout" \
+            "3 Custom screen layout command" "Enter a command to set up the screen layout" \
+            "4 Automatic screen layout" "Apply the operating system's automatic screen layout (apply no custom scripts)" \
+            3>&1 1>&2 2>&3)
+        RET=$?
+        if [ $RET -eq 1 ]; then
+            return 0
+        elif [ $RET -eq 0 ]; then
+            local CMD=""
+            case "$FUN" in
+                1\ *)
+                    sudo -E -u "$SUDO_USER" arandr --randr-display=:0
+                    RET=$?
+                    ;;
+                2\ *)
+                    CMD="$(do_select_screen_layout_initializer)"
+                    RET=$?
+                    ;;
+                3\ *)
+                    CMD="$(do_custom_screen_layout_initializer)"
+                    RET=0
+                    ;;
+                4\ *)
+                    CMD=""
+                    RET=$?
+                    ;;
+                *) error_unrecognized_option "$FUN" ;;
+            esac || error_processing_option "$FUN"
+        fi
+        
+        if [ $RET -eq 0 ]; then
+            if [[ "$FUN" = "2 "* || "$FUN" = "3 "* || "$FUN" = "4 "* ]]; then
+                set_config_variable "INIT_SCREEN_LAYOUT" "$CMD" \
+                    || "$DIALOG" --msgbox "Error setting system-wide screen layout initializer" 0 0
+            fi
+        fi
+    done
+}
+
+
+do_config_file_menu() {
+  "$DIALOG" --title "Config file" \
+      --yesno "Do you want to edit the file ${CONFIG_FILE}?\n\nThe file is a shell script that will be sourced in various kiosk scripts." 0 0
+  case "$?" in
+      0) edit_config_file ;;
+      1) return 0 ;;
+      255) return 0 ;;
+      *) error_unrecognized_option "$RET" ;;
+  esac || "$DIALOG" --msgbox "Error editing config file" 0 0
+}
+
+edit_config_file() {
+  nano "${CONFIG_FILE}"
+  "$DIALOG" --title "Config file" \
+      --msgbox "The changes to the config file will only be fully in effect after logging out and back in again." 0 0
+}
+
 do_environment_menu() {
   "$DIALOG" --title "Environment variables" \
       --yesno "Do you want to edit the file ${ENVIRONMENT_FILE}?\n\nThe file is a shell script that will be sourced during each login. "export" the variables you want to add to the environment." 0 0
@@ -365,20 +476,28 @@ edit_environment() {
       --msgbox "The changes to the environment have not been applied yet. Either reboot or execute\n\n. \"${ENVIRONMENT_FILE}\"\n\nin your shell." 0 0
 }
 
+do_touchscreen_map_menu() {
+  do_config_file_menu
+}
+
 do_graphics_and_input_menu() {
     local FUN RET
     FUN=$("$DIALOG" --title "Graphics & Input" \
         --menu "" 0 0 0 \
         --cancel-button Back \
         --ok-button Select \
-        "1 Hide cursor" "Enable or disable cursor hiding" \
+        "1 Screen layout" "Set screen resolution and layout" \
+        "2 Touchscreen map" "Map touch screens to outputs (edit kiosk config file)" \
+        "3 Hide cursor" "Enable or disable cursor hiding" \
         3>&1 1>&2 2>&3)
     RET=$?
     if [ $RET -eq 1 ]; then
         return 0
     elif [ $RET -eq 0 ]; then
         case "$FUN" in
-            1\ *) do_hidecursor_menu ;;
+            1\ *) do_screen_layout_menu ;;
+            2\ *) do_touchscreen_map_menu ;;
+            3\ *) do_hidecursor_menu ;;
             *) error_unrecognized_option "$FUN" ;;
         esac || error_processing_option "$FUN"
     fi
@@ -428,15 +547,20 @@ do_localization_menu() {
 
 do_select_installer() {
     do_select_file \
-        "Update-script selection" \
+        "Install-script selection" \
         "Select the installer to run" \
         "No pre-installed exhibits found." \
         /opt/kiosk-scripts/bin/install -perm -a=x -name install-\*
 }
 
-do_update_menu()  {
+do_install_exhibit_menu()  {
     local MSG_TEXT CMD RET
-    MSG_TEXT="New versions of exhibits will only be installed if their install scripts are updated beforehand via the install-kiosk-scripts script.\n"
+    MSG_TEXT="New versions of exhibits can only be installed if their install scripts are updated beforehand via the install-kiosk-scripts script.\n"
+    MSG_TEXT+="Some of your local configuration may be overwritten during the update.\n"
+    MSG_TEXT+="It is not advised to run the script in a chroot.\n"
+    MSG_TEXT+="\n"
+    MSG_TEXT+="KIOSK_SCRIPTS_REPO=$KIOSK_SCRIPTS_REPO\n"
+    MSG_TEXT+="KIOSK_SCRIPTS_COMMITISH=$KIOSK_SCRIPTS_COMMITISH\n"
     MSG_TEXT+="\n"
     MSG_TEXT+="Run install-kiosk-scripts now?"
     "$DIALOG" --yesno "$MSG_TEXT" 0 0
@@ -454,6 +578,121 @@ do_update_menu()  {
         else
             "$DIALOG" --msgbox "An error occurred during installation. Please check the output on the terminal." 0 0 3>&1 1>&2 2>&3
         fi
+    fi
+}
+
+do_install_kiosk_scripts() {
+    local MSG_TEXT RET
+    MSG_TEXT=""
+    MSG_TEXT+="Some of your local configuration may be overwritten during the update.\n"
+    MSG_TEXT+="Running this update in a chroot should work.\n"
+    MSG_TEXT+="\n"
+    MSG_TEXT+="KIOSK_SCRIPTS_REPO=$KIOSK_SCRIPTS_REPO\n"
+    MSG_TEXT+="KIOSK_SCRIPTS_COMMITISH=$KIOSK_SCRIPTS_COMMITISH\n"
+    MSG_TEXT+="\n"
+    MSG_TEXT+="Update the kiosk-scripts files now?"
+    "$DIALOG" --yesno "$MSG_TEXT" 0 0
+    if [ $? -eq 0 ]; then # yes
+      install-kiosk-scripts
+      RET=$?
+      if [ $RET -eq 0 ]; then
+          "$DIALOG" --msgbox "Installation completed without errors." 0 0 3>&1 1>&2 2>&3
+          ASK_TO_REBOOT=1
+      else
+          "$DIALOG" --msgbox "An error occurred during installation. Please check the output on the terminal." 0 0 3>&1 1>&2 2>&3
+      fi
+    fi
+}
+
+do_update_kiosk_script_files() {
+    local MSG_TEXT RET
+    MSG_TEXT=""
+    MSG_TEXT+="Some of your local configuration may be overwritten during the update.\n"
+    MSG_TEXT+="Running this update in a chroot should work.\n"
+    MSG_TEXT+="\n"
+    MSG_TEXT+="KIOSK_SCRIPTS_REPO=$KIOSK_SCRIPTS_REPO\n"
+    MSG_TEXT+="KIOSK_SCRIPTS_COMMITISH=$KIOSK_SCRIPTS_COMMITISH\n"
+    MSG_TEXT+="\n"
+    MSG_TEXT+="Update the kiosk-scripts files now?"
+    "$DIALOG" --yesno "$MSG_TEXT" 0 0
+    if [ $? -eq 0 ]; then # yes
+      "$(get_script_dirname)/internal/install-source-from-git" "$KIOSK_SCRIPTS_COMMITISH" "$KIOSK_SCRIPTS_REPO" "/opt/kiosk-scripts"
+      RET=$?
+      if [ $RET -eq 0 ]; then
+          "$DIALOG" --msgbox "Installation completed without errors." 0 0 3>&1 1>&2 2>&3
+          ASK_TO_REBOOT=1
+      else
+          "$DIALOG" --msgbox "An error occurred during installation. Please check the output on the terminal." 0 0 3>&1 1>&2 2>&3
+      fi
+    fi
+}
+
+do_enter_kiosk_scripts_repo() {
+    local MSG_TEXT
+    MSG_TEXT=""
+    MSG_TEXT+="Enter a URL to a git repository.\n"
+    MSG_TEXT+="\n"
+    MSG_TEXT+="Current value:\n"
+    MSG_TEXT+="KIOSK_SCRIPTS_REPO=$KIOSK_SCRIPTS_REPO"
+    "$DIALOG" --title "kiosk-scripts repository selection" \
+        --inputbox "$MSG_TEXT" 0 $D_WIDTH "" \
+        --cancel-button Back \
+        3>&1 1>&2 2>&3
+}
+
+do_set_kiosk_scripts_repo() {
+    local REPO
+    REPO=$(do_enter_kiosk_scripts_repo)
+    if [ $? -eq 0 ]; then
+      set_config_variable "KIOSK_SCRIPTS_REPO" "$REPO" \
+        || "$DIALOG" --msgbox "Error setting kiosk-scripts repository URL" 0 0
+    fi
+}
+
+do_enter_kiosk_scripts_commitish() {
+    local MSG_TEXT
+    MSG_TEXT=""
+    MSG_TEXT+="Enter a branch name or commit hash (\"commitish\").\n"
+    MSG_TEXT+="\n"
+    MSG_TEXT+="Current value:\n"
+    MSG_TEXT+="KIOSK_SCRIPTS_COMMITISH=$KIOSK_SCRIPTS_COMMITISH"
+    "$DIALOG" --title "kiosk-scripts branch or commit hash" \
+        --inputbox "$MSG_TEXT" 0 $D_WIDTH "" \
+        --cancel-button Back \
+        3>&1 1>&2 2>&3
+}
+
+do_set_kiosk_scripts_commitish() {
+  local COMMITISH
+  COMMITISH=$(do_enter_kiosk_scripts_commitish)
+  if [ $? -eq 0 ]; then
+    set_config_variable "KIOSK_SCRIPTS_COMMITISH" "$COMMITISH" \
+      || "$DIALOG" --msgbox "Error setting kiosk-scripts branch or commit hash" 0 0
+  fi
+}
+
+do_install_kiosk_script_menu() {
+    local FUN RET
+    FUN=$("$DIALOG" --title "Kiosk-scripts updater" \
+        --menu "Configure and run kiosk-scripts updater" 0 0 0 \
+        --cancel-button Back \
+        --ok-button Select \
+        "1 Update files and install" "Update the kiosk-scripts from the repository and execute installer" \
+        "2 Update files only" "Update the kiosk-scripts from the repository" \
+        "3 Set repository" "Set the repository URL to pull the kiosk-scripts from" \
+        "4 Set branch or commit hash" "Set the branch or commit hash of the kiosk-scripts repository" \
+        3>&1 1>&2 2>&3)
+    RET=$?
+    if [ $RET -eq 1 ]; then
+        return 0
+    elif [ $RET -eq 0 ]; then
+        case "$FUN" in
+            1\ *) do_run_install_kiosk_scripts ;;
+            2\ *) do_update_kiosk_script_files ;;
+            3\ *) do_set_kiosk_scripts_repo ;;
+            4\ *) do_set_kiosk_scripts_commitish ;;
+            *) error_unrecognized_option "$FUN" ;;
+        esac || error_processing_option "$FUN"
     fi
 }
 
@@ -489,7 +728,7 @@ do_system_information_menu() {
 
 do_main_menu() {
     local FUN RET
-    FUN=$("$DIALOG" --title "Kiosk Configuration Tool (kiosk-config)" \
+    FUN=$("$DIALOG" --title "Kiosk Configuration Tool (kiosk-config $(do_get_git_rev))" \
         --menu "Configure various settings of this kiosk station." 0 0 0 \
         --cancel-button Finish \
         --ok-button Select \
@@ -498,8 +737,9 @@ do_main_menu() {
         "3 Environment" "Set station-specific environment variables" \
         "4 Graphics & Input" "Configure graphics and input devices" \
         "5 Localization" "Set up language and regional settings to match your location" \
-        "6 Update" "Update exhibits and install scripts" \
-        "7 System Information" "Display operating system and hardware information" \
+        "6 Install kiosk scripts" "Install kiosk scripts" \
+        "7 Install exhibits" "Install exhibits" \
+        "8 System Information" "Display operating system and hardware information" \
         3>&1 1>&2 2>&3)
     RET=$?
     if [ $RET -eq 1 ]; then
@@ -511,8 +751,9 @@ do_main_menu() {
             3\ *) do_environment_menu ;;
             4\ *) do_graphics_and_input_menu ;;
             5\ *) do_localization_menu ;;
-            6\ *) do_update_menu ;;
-            7\ *) do_system_information_menu ;;
+            6\ *) do_install_kiosk_script_menu ;;
+            7\ *) do_install_exhibit_menu ;;
+            8\ *) do_system_information_menu ;;
             *) error_unrecognized_option "$FUN" ;;
         esac || error_processing_option "$FUN"
     fi
