@@ -94,10 +94,10 @@ install() {
     # Checkout the requested commit or branch
     git checkout -f "$COMMITISH" 2> /dev/null || git checkout -f -b "$COMMITISH"
 
-    if [[ `git status --porcelain` ]]; then
-        git reset --hard
-        echo "There were local changes. Re-running ..."
-        exec "./bin/install/install-kiosk-scripts" "$@"
+    if [[ $(git status -uno --porcelain) ]]; then
+        echo "There were local changes. Aborting ..."
+        echo "Clean up the git repository in ${INSTALL_DIR} before re-running this script."
+        exit 1
     else
         # no local changes, check for remote changes
 
