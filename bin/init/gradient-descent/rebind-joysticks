@@ -1,66 +1,53 @@
 #!/usr/bin/bash
-
-# Adjust the GRADIENT_DESCENT_JS0_SYS_PATH and GRADIENT_DESCENT_JS1_SYS_PATH
-# environment variables to match the (USB) ports on your machine.
+# The device ids of joysticks depend on the order they have been detected by the OS.
+# During boot, small differences in the duration devices need for initialization
+# may therefore result in different device ids for the same joystick across reboots.
 #
-# The path in sysfs can be found using
-# `readlink -f /sys/class/input/js*/device/device`
-# while the joysticks/gamepads are attached.
-#
-# By default, the devices are rebound in alphabetical order of their sysfs
-# device path derived from `readlink -f /sys/class/input/js*/device/device`.
+# This scripts unbinds all joysticks connected to the system and rebinds them one
+# after the other in sorted order (according to their path in sysfs).
 
-echo "The following joysticks/gamepads are present in the system:"
-DEVICES=$(readlink -f /sys/class/input/js*/device/device | sort)
-echo "$DEVICES"
+echo "Ensuring deterministic assignment of joysticks to device ids."
+
 echo
-
-JS0_PATH_DEFAULT=$(echo "$DEVICES" | sed "1q;d")
-JS1_PATH_DEFAULT=$(echo "$DEVICES" | sed "2q;d")
-
-JS0_PATH=$(readlink -f "${GRADIENT_DESCENT_JS0_SYS_PATH:-$JS0_PATH_DEFAULT}")
-JS0_ID=$(basename "$JS0_PATH")
-JS0_DRV=$(readlink -f "$JS0_PATH/driver")
-JS1_PATH=$(readlink -f "${GRADIENT_DESCENT_JS1_SYS_PATH:-$JS1_PATH_DEFAULT}")
-JS1_ID=$(basename "$JS1_PATH")
-JS1_DRV=$(readlink -f "$JS1_PATH/driver")
-
-if [[ -z "${GRADIENT_DESCENT_JS0_SYS_PATH}" ]]; then
-  echo "GRADIENT_DESCENT_JS0_SYS_PATH environment variable unset. Using default value: ${JS0_PATH}"
-else
-  echo "Using GRADIENT_DESCENT_JS0_SYS_PATH environment variable. Value: ${JS0_PATH}"
-fi
-
-if [[ -z "${GRADIENT_DESCENT_JS1_SYS_PATH}" ]]; then
-  echo "GRADIENT_DESCENT_JS1_SYS_PATH environment variable unset. Using default value: ${JS1_PATH}"
-else
-  echo "Using GRADIENT_DESCENT_JS1_SYS_PATH environment variable. Value: ${JS1_PATH}"
-fi
-
-
-echo "Unbinding all joysticks ..."
-find /sys/class/input/ -name 'js*' -print0 | while read -r -d '' js
-do
-  echo "  Unbinding $js"
-  DEVICE_JS="$(readlink -f "$js/device")"
-  DEVICE_INPUT="$(echo "$DEVICE_JS" | sed "s|/input/.*$||")"
-  DEVICE_INPUT_ID="$(basename "$DEVICE_INPUT")"
-  echo "$DEVICE_INPUT_ID" > "$DEVICE_INPUT/driver/unbind"
+echo "The following joysticks/gamepads are present in the system:"
+DEVICES=(/sys/class/input/js*)
+CANONICAL_DEVICES=()
+for DEVICE in "${DEVICES[@]}"; do
+  CANONICAL_DEVICE=$(readlink -f "$DEVICE/device/device")
+  CANONICAL_DEVICES+=("$CANONICAL_DEVICE")
+  echo "$DEVICE: $CANONICAL_DEVICE"
 done
-# Wait a bit for the devices to unbound
-sleep 1
 
-# Rebind the joysticks in the order we want them to appear in /dev/input/
-echo "Re-binding the USB devices ..."
+echo
+echo "Unbinding all joysticks ..."
+# Unbind all joysticks in sorted order
+# Sort the devices by their sysfs path and store the driver path in an associative array
+readarray -t CANONICAL_DEVICES_SORTED < <(printf '%s\n' "${CANONICAL_DEVICES[@]}" | sort)
+declare -A DRIVER
+for CANONICAL_DEVICE in "${CANONICAL_DEVICES_SORTED[@]}"; do
+  echo "  Unbinding $CANONICAL_DEVICE"
+  DEVICE_ID="$(basename "$CANONICAL_DEVICE")"
+  DRIVER["$DEVICE_ID"]="$(readlink -f "$CANONICAL_DEVICE/driver")"
+  echo "$DEVICE_ID" > "${DRIVER["$DEVICE_ID"]}/unbind"
+  while [ -d "$CANONICAL_DEVICE/driver" ]; do
+    sleep 0.01s
+  done
+done
 
-echo "  Binding $JS0_ID"
-echo "$JS0_ID" > "$JS0_DRV/bind"
-sleep 1
+echo
+echo "Re-binding the devices in sorted order ..."
+for CANONICAL_DEVICE in "${CANONICAL_DEVICES_SORTED[@]}"; do
+  echo "  Binding $CANONICAL_DEVICE"
+  DEVICE_ID="$(basename "$CANONICAL_DEVICE")"
+  echo "$DEVICE_ID" > "${DRIVER["$DEVICE_ID"]}/bind"
+  while ! [ -d "$CANONICAL_DEVICE/driver" ]; do
+    sleep 0.01s
+  done
+done
 
-echo "  Binding $JS1_ID"
-echo "$JS1_ID" > "$JS1_DRV/bind"
-sleep 1
-
-echo 
-echo "  /dev/input/js0 now belongs to $(readlink -f "/sys/class/input/js0")"
-echo "  /dev/input/js1 now belongs to $(readlink -f "/sys/class/input/js1")"
+echo
+echo "Result:"
+for DEVICE in /sys/class/input/js*; do
+  CANONICAL_DEVICE=$(readlink -f "$DEVICE/device/device")
+  echo "$DEVICE: $CANONICAL_DEVICE"
+done
