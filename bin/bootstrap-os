@@ -89,6 +89,7 @@ bootstrap() {
     install-reinforcement-learning-2
     install-simple-networks
     install-sumory
+    install-sumory-bears
     install-talk-to-me
 
     # Run the kiosk-config script
